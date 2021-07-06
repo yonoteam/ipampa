@@ -19,15 +19,24 @@ subsection \<open> Basic \<close>
 lemma abs_le_eq:
   shows "(r::real) > 0 \<Longrightarrow> (\<bar>x\<bar> < r) = (-r < x \<and> x < r)"
     and "(r::real) > 0 \<Longrightarrow> (\<bar>x\<bar> \<le> r) = (-r \<le> x \<and> x \<le> r)"
-  sorry
+   apply linarith
+  apply linarith
+  done
 
 lemma is_interval_real_nonneg[simp]: "is_interval (Collect ((\<le>) (0::real)))"
   sorry
+
+lemma "((a::real)-b)^2 = a^2 - 2 * a * b + b^2"
+by (simp add: power2_diff power_mult_distrib)
 
 lemma norm_rotate_eq:
   fixes x :: "'a:: {banach,real_normed_field}"
   shows "(x * cos t - y * sin t)\<^sup>2 + (x * sin t + y * cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2"
     and "(x * cos t + y * sin t)\<^sup>2 + (y * cos t - x * sin t)\<^sup>2 = x\<^sup>2 + y\<^sup>2"
+proof-
+  have "(x * cos t - y * sin t)\<^sup>2 = x^2 * (cos t)^2 -2 * x * y * cos t * sin t + y^2 * (sin t)^2 "
+    by (simp add: power2_diff power_mult_distrib)
+
   oops
 
 lemma mult_abs_right_mono: "a < b \<Longrightarrow> a * \<bar>c\<bar> \<le> b * \<bar>c\<bar>" for c::real
