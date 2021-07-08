@@ -23,35 +23,57 @@ lemma abs_le_eq:
   apply linarith
   done
 
-lemma is_interval_real_nonneg[simp]: "is_interval (Collect ((\<le>) (0::real)))"
-  sorry
+lemma "(Collect ((\<le>) (0::real))) = {x:: real. x\<ge>0}"
+  by simp
+
+lemma is_interval_real_nonneg[simp]: "is_interval {x:: real. x\<ge>0}"
+  by (simp add: is_interval_1)
 
 lemma "((a::real)-b)^2 = a^2 - 2 * a * b + b^2"
 by (simp add: power2_diff power_mult_distrib)
 
 lemma norm_rotate_eq:
   fixes x :: "'a:: {banach,real_normed_field}"
-  shows "(x * cos t - y * sin t)\<^sup>2 + (x * sin t + y * cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2"
+  shows "(x * cos t - y * sin t)\<^sup>2 + (x * sin t + y * cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2" (is "?a^2+?b^2 =_")
     and "(x * cos t + y * sin t)\<^sup>2 + (y * cos t - x * sin t)\<^sup>2 = x\<^sup>2 + y\<^sup>2"
 proof-
-  have "(x * cos t - y * sin t)\<^sup>2 = x^2 * (cos t)^2 -2 * x * y * cos t * sin t + y^2 * (sin t)^2 "
+  have exp1: "?a^2 = x^2 * (cos t)^2 -2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?c")
     by (simp add: power2_diff power_mult_distrib)
+  have exp2: "?b^2 = x^2 * (sin t)^2 +2 * x * y * sin t * cos t + y^2 * (cos t)^2" (is "_=?d")
+    by (simp add: power2_sum power_mult_distrib)
+  have "(cos t)^2 + (sin t)^2 = 1"
+    by simp
+  have "?a\<^sup>2 + ?b\<^sup>2 = ?c+?d "
+    using exp1 exp2
+    by fastforce
+  also have "... = x^2 * (cos t)^2 + y^2 * (sin t)^2 +x^2 * (sin t)^2  + y^2 * (cos t)^2"
+    by auto
+  also have "... = x^2 + y^2"
+    by (smt (z3) \<open>(cos t)\<^sup>2 + (sin t)\<^sup>2 = 1\<close> add_diff_cancel_left'
+        cancel_ab_semigroup_add_class.diff_right_commute diff_add_cancel
+        mult.commute mult_numeral_1 numeral_One vector_space_over_itself.scale_left_diff_distrib)
+  finally show  "?a\<^sup>2+?b\<^sup>2 = x\<^sup>2 + y\<^sup>2" 
+    by simp
+next
+ 
 
   oops
 
 lemma mult_abs_right_mono: "a < b \<Longrightarrow> a * \<bar>c\<bar> \<le> b * \<bar>c\<bar>" for c::real
-  oops
+  by (simp add: mult_right_mono)
+
 
 lemma dyn_cons_qty_arith: "(36::real) * (x1\<^sup>2 * (x1 * x2 ^ 3)) - 
   (- (24 * (x1\<^sup>2 * x2) * x1 ^ 3 * (x2)\<^sup>2) - 12 * (x1\<^sup>2 * x2) * x1 * x2 ^ 4) - 
   36 * (x1\<^sup>2 * (x2 * x1)) * (x2)\<^sup>2 - 12 * (x1\<^sup>2 * (x1 * x2 ^ 5)) = 24 * (x1 ^ 5 * x2 ^ 3)" 
   (is "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t6")
+
   oops
 
 lemma local_lipschitz_first_order_linear:
   fixes c::"real \<Rightarrow> real"
   assumes "continuous_on T c"
-  shows "local_lipschitz T UNIV (\<lambda>t. (*) (c t))"
+  shows "local_lipschitz T UNIV (\<lambda>t x.  (c t) * x)"
 proof(unfold local_lipschitz_def lipschitz_on_def, clarsimp simp: dist_norm)
   fix x t::real assume "t \<in> T"
   thus "\<exists>u>0. \<exists>L. \<forall>t\<in>cball t u \<inter> T. 0 \<le> L \<and> 
@@ -63,6 +85,7 @@ qed
 lemma darboux_ineq_arith:
   assumes "0 \<le> s\<^sub>1 + s\<^sub>2" and "0 \<le> (t::real)" and "t * s\<^sub>1 < 1"
   shows "0 \<le> s\<^sub>1 / (1 - t * s\<^sub>1) + (s\<^sub>2 - s\<^sub>1 * ln (1 - t * s\<^sub>1)) / (1 - t * s\<^sub>1)"
+
   oops
 
 lemma picard_lindeloef_dyn_bif: "continuous_on T g \<Longrightarrow> t\<^sub>0 \<in> T \<Longrightarrow> is_interval T \<Longrightarrow>
