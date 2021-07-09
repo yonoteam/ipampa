@@ -35,13 +35,13 @@ by (simp add: power2_diff power_mult_distrib)
 lemma norm_rotate_eq:
   fixes x :: "'a:: {banach,real_normed_field}"
   shows "(x * cos t - y * sin t)\<^sup>2 + (x * sin t + y * cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2" (is "?a^2+?b^2 =_")
-    and "(x * cos t + y * sin t)\<^sup>2 + (y * cos t - x * sin t)\<^sup>2 = x\<^sup>2 + y\<^sup>2"
+    and "(x * cos t + y * sin t)\<^sup>2 + (y * cos t - x * sin t)\<^sup>2 = x\<^sup>2 + y\<^sup>2" (is "?e^2+?f^2 =_")
 proof-
   have exp1: "?a^2 = x^2 * (cos t)^2 -2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?c")
     by (simp add: power2_diff power_mult_distrib)
   have exp2: "?b^2 = x^2 * (sin t)^2 +2 * x * y * sin t * cos t + y^2 * (cos t)^2" (is "_=?d")
     by (simp add: power2_sum power_mult_distrib)
-  have "(cos t)^2 + (sin t)^2 = 1"
+  have id1:  "(cos t)^2 + (sin t)^2 = 1"
     by simp
   have "?a\<^sup>2 + ?b\<^sup>2 = ?c+?d "
     using exp1 exp2
@@ -55,9 +55,26 @@ proof-
   finally show  "?a\<^sup>2+?b\<^sup>2 = x\<^sup>2 + y\<^sup>2" 
     by simp
 next
- 
-
-  oops
+  have exp3: "?e^2 = x^2 * (cos t)^2 +2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?g")
+    by (simp add: power2_sum power_mult_distrib)
+  have exp4: "?f^2 =  y^2 * (cos t)^2 -2 * x * y * sin t * cos t + x^2 * (sin t)^2  "(is "_= ?h")
+    by (simp add: power2_diff power_mult_distrib)
+have id1:  "(cos t)^2 + (sin t)^2 = 1"
+    by simp
+  have "?e\<^sup>2 + ?f\<^sup>2 = ?g+?h "
+    using exp3 exp4
+    by presburger
+  also have "... = x^2 * (cos t)^2 + x^2 * (sin t)^2  + y^2 * (sin t)^2 + y^2 * (cos t)^2  "
+    by fastforce
+  have "... = x^2 + y^2 "
+    by (smt (z3) add_diff_cancel_left' diff_add_cancel id1 is_num_normalize(1)
+ mult.commute mult_numeral_1 numeral_One vector_space_over_itself.scale_left_diff_distrib)
+  finally show  "?e\<^sup>2 + ?f\<^sup>2 = x\<^sup>2 + y\<^sup>2"
+    by (simp add: \<open>x\<^sup>2 * (cos t)\<^sup>2 + 2 * x * y * cos t * sin t + y\<^sup>2 * (sin t)\<^sup>2 
++ (y\<^sup>2 * (cos t)\<^sup>2 - 2 * x * y * sin t * cos t + x\<^sup>2 * (sin t)\<^sup>2) = x\<^sup>2 * (cos t)\<^sup>2
+ + x\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (cos t)\<^sup>2\<close> \<open>x\<^sup>2 * (cos t)\<^sup>2 + x\<^sup>2 * (sin t)\<^sup>2
+ + y\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2\<close> calculation) 
+qed
 
 lemma mult_abs_right_mono: "a < b \<Longrightarrow> a * \<bar>c\<bar> \<le> b * \<bar>c\<bar>" for c::real
   by (simp add: mult_right_mono)
@@ -67,8 +84,24 @@ lemma dyn_cons_qty_arith: "(36::real) * (x1\<^sup>2 * (x1 * x2 ^ 3)) -
   (- (24 * (x1\<^sup>2 * x2) * x1 ^ 3 * (x2)\<^sup>2) - 12 * (x1\<^sup>2 * x2) * x1 * x2 ^ 4) - 
   36 * (x1\<^sup>2 * (x2 * x1)) * (x2)\<^sup>2 - 12 * (x1\<^sup>2 * (x1 * x2 ^ 5)) = 24 * (x1 ^ 5 * x2 ^ 3)" 
   (is "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t6")
-
-  oops
+proof- 
+  have "?t1= ?t4"
+    by (simp add: power2_eq_square power3_eq_cube)
+  have "?t2 = ?t6"
+    by (metis (no_types, hide_lams)
+ mult.assoc mult.left_commute power2_eq_square power3_eq_cube power_add_numeral2
+ power_commutes semiring_norm(2) semiring_norm(7))
+  have "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t2 + ?t3 - ?t5"
+    by (simp add: \<open>36 * (x1\<^sup>2 * (x1 * x2 ^ 3)) = 36 * (x1\<^sup>2 * (x2 * x1)) * x2\<^sup>2\<close>)
+  also have "... = ?t2 "
+    by (metis diff_add_cancel mult.commute
+ numeral_plus_numeral one_eq_numeral_iff power_add power_one_right pth_2 semiring_norm(3)
+vector_space_over_itself.scale_scale)
+  also have "... = ?t6 "
+    by (simp add: \<open>24 * (x1\<^sup>2 * x2) * x1 ^ 3 * x2\<^sup>2 = 24 * (x1 ^ 5 * x2 ^ 3)\<close>)
+  finally show "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t6" 
+    by simp
+qed
 
 lemma local_lipschitz_first_order_linear:
   fixes c::"real \<Rightarrow> real"
