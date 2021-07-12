@@ -131,9 +131,21 @@ proof-
     sorry
 qed
 
+lemma "((a:: real) + b) / c = a / c + b / c"
+  by (simp add: add_divide_distrib)
+
+lemma "((x::real)-y)^2  / (2 * B)   = x^2 / (2 * B)  -2 * x * y /(2 * B)  + y^2  / (2 * B)" 
+
 lemma STTexample3a_arith:
   assumes "0 < (B::real)" "0 \<le> t" "0 \<le> x2" and key: "x1 + x2\<^sup>2 / (2 * B) \<le> S"
   shows "x2 * t - B * t\<^sup>2 / 2 + x1 + (x2 - B * t)\<^sup>2 / (2 * B) \<le> S" (is "?lhs \<le> S")
+proof-
+  have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
+    by (simp add: power2_diff power_mult_distrib)
+  have "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) "
+    by (simp add: \<open>(x2 - B * t)\<^sup>2 = x2\<^sup>2 - 2 * B * x2 * t + B\<^sup>2 * t\<^sup>2\<close>)
+  have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
+
   oops
 
 lemma STTexample5_arith:
@@ -141,7 +153,11 @@ lemma STTexample5_arith:
     and key: "x1 + x2\<^sup>2 / (2 * B) + (A * (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2) / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)) \<le> S" (is "?k3 \<le> S")
     and ghyp: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> \<tau> \<le> \<epsilon>"
   shows "A * t\<^sup>2 / 2 + x2 * t + x1 + (A * t + x2)\<^sup>2 / (2 * B) \<le> S" (is "?k0 \<le> S")
-  oops
+proof-
+  have "t \<le>  \<epsilon> "using ghyp
+    using assms(5) by force 
+  have " (A * t + x2)\<^sup>2 / (2 * B) = A^2 * t^2 / (2 * B) + A * t * x2 / B + x2^2 / (2 * B)"
+    sorry
 
 lemma STTexample6_arith:
   assumes "0 < A" "0 < B" "0 < \<epsilon>" "0 \<le> x2" "0 \<le> (t::real)" "- B \<le> k" "k \<le> A"
