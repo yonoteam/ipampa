@@ -79,6 +79,7 @@ qed
 lemma mult_abs_right_mono: "a < b \<Longrightarrow> a * \<bar>c\<bar> \<le> b * \<bar>c\<bar>" for c::real
   by (simp add: mult_right_mono)
 
+lemma "(a:: real)* a^n = a^(Suc n)"
 
 lemma dyn_cons_qty_arith: "(36::real) * (x1\<^sup>2 * (x1 * x2 ^ 3)) - 
   (- (24 * (x1\<^sup>2 * x2) * x1 ^ 3 * (x2)\<^sup>2) - 12 * (x1\<^sup>2 * x2) * x1 * x2 ^ 4) - 
@@ -91,12 +92,12 @@ proof-
     by (metis (no_types, hide_lams)
  mult.assoc mult.left_commute power2_eq_square power3_eq_cube power_add_numeral2
  power_commutes semiring_norm(2) semiring_norm(7))
+  have h1: "?t3 = ?t5"
+    by (simp add: semiring_normalization_rules(27))
   have "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t2 + ?t3 - ?t5"
     by (simp add: \<open>36 * (x1\<^sup>2 * (x1 * x2 ^ 3)) = 36 * (x1\<^sup>2 * (x2 * x1)) * x2\<^sup>2\<close>)
   also have "... = ?t2 "
-    by (metis diff_add_cancel mult.commute
- numeral_plus_numeral one_eq_numeral_iff power_add power_one_right pth_2 semiring_norm(3)
-vector_space_over_itself.scale_scale)
+    using h1 by simp
   also have "... = ?t6 "
     by (simp add: \<open>24 * (x1\<^sup>2 * x2) * x1 ^ 3 * x2\<^sup>2 = 24 * (x1 ^ 5 * x2 ^ 3)\<close>)
   finally show "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t6" 
@@ -128,13 +129,20 @@ proof-
   fix x t::real
   show "\<exists>u>0. (\<exists>\<tau>. \<bar>t - \<tau>\<bar> \<le> u \<and> \<tau> \<in> T) \<longrightarrow> 
   (\<exists>L\<ge>0. \<forall>xa\<in>cball x u. \<forall>y\<in>cball x u. \<bar>xa\<^sup>2 - y\<^sup>2\<bar> \<le> L * \<bar>xa - y\<bar>)"
+  proof (rule_tac x = 1 in  exI, clarsimp)
+    fix w 
+    assume "\<bar>t - w\<bar> \<le> 1" and "w \<in> T"
+    show " \<exists>L\<ge>0. \<forall>z\<in>cball x 1. \<forall>y\<in>cball x 1. \<bar>z\<^sup>2 - y\<^sup>2\<bar> \<le> L * \<bar>z - y\<bar>"
+
+    
     sorry
 qed
 
 lemma "((a:: real) + b) / c = a / c + b / c"
   by (simp add: add_divide_distrib)
 
-lemma "((x::real)-y)^2  / (2 * B)   = x^2 / (2 * B)  -2 * x * y /(2 * B)  + y^2  / (2 * B)" 
+lemma "((x::real)-y)^2  / (2 * B)   = x^2 / (2 * B)  -2 * x * y /(2 * B)  + y^2  / (2 * B)"
+ by (simp add: add_divide_distrib)
 
 lemma STTexample3a_arith:
   assumes "0 < (B::real)" "0 \<le> t" "0 \<le> x2" and key: "x1 + x2\<^sup>2 / (2 * B) \<le> S"
@@ -142,11 +150,19 @@ lemma STTexample3a_arith:
 proof-
   have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
     by (simp add: power2_diff power_mult_distrib)
-  have "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) "
-    by (simp add: \<open>(x2 - B * t)\<^sup>2 = x2\<^sup>2 - 2 * B * x2 * t + B\<^sup>2 * t\<^sup>2\<close>)
-  have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
-
-  oops
+  hence "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) " (is "_ = ?f")
+    by simp
+  also have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
+    by (simp add: add_divide_distrib  diff_divide_distrib)
+  also have "... =x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
+    apply clarsimp
+    by (simp add: power2_eq_square)
+  hence "?lhs = x1 + x2\<^sup>2 / (2 * B) "
+    by (simp add: calculation)
+  finally show  "?lhs \<le> S"
+    using key
+    by simp
+qed
 
 lemma STTexample5_arith:
   assumes "0 < A" "0 < B" "0 < \<epsilon>" "0 \<le> x2" "0 \<le> (t::real)" 
@@ -154,10 +170,33 @@ lemma STTexample5_arith:
     and ghyp: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> \<tau> \<le> \<epsilon>"
   shows "A * t\<^sup>2 / 2 + x2 * t + x1 + (A * t + x2)\<^sup>2 / (2 * B) \<le> S" (is "?k0 \<le> S")
 proof-
-  have "t \<le>  \<epsilon> "using ghyp
-    using assms(5) by force 
-  have " (A * t + x2)\<^sup>2 / (2 * B) = A^2 * t^2 / (2 * B) + A * t * x2 / B + x2^2 / (2 * B)"
-    sorry
+  have "(A * t + x2)\<^sup>2 = A^2 * t^2 +2* A * t * x2  + x2^2 "
+ by (simp add: power2_sum power_mult_distrib)
+  hence "(A * t + x2)\<^sup>2 / (2 * B) = (A^2 * t^2 +2* A * t * x2  + x2^2) / (2 * B)"
+    by simp
+  also have "... = A^2 * t^2 /(2 * B) + 2 * A * t * x2 /(2 * B) + x2^2 /(2 * B) "
+    by (simp add: add_divide_distrib)
+  also have "... = A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B) "
+    by  clarsimp
+have r1: "t \<le>  \<epsilon> " using ghyp
+  using assms(5) by force 
+  have "x2 * t \<le>  \<epsilon> * x2"
+    by (simp add: \<open>t \<le> \<epsilon>\<close> assms(4) mult.commute mult_right_mono)
+  have "A * t\<^sup>2 / 2 \<le> A * \<epsilon>\<^sup>2 / 2 "
+    by (simp add: \<open>t \<le> \<epsilon>\<close> assms(1) assms(5) power_mono)
+  hence "A^2 * t^2 /(2 * B) \<le> A^2 * \<epsilon>\<^sup>2 /(2 * B)  " using assms(2)
+    apply clarsimp
+    by (simp add: assms(1) frac_le mult_left_mono) 
+  have "A* t* x2 / B \<le> A * \<epsilon> * x2 / B " using r1 assms
+    by (metis div_0 divide_right_mono le_divide_eq_1_neg less_eq_real_def 
+mult_le_cancel_left_pos mult_le_cancel_right not_one_le_zero numeral_One)
+  have "?k0 = A * t\<^sup>2 / 2 + x2 * t + x1 + A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B) "
+    by (simp add: calculation)
+  have "?k3 = x1 + x2\<^sup>2 / (2 * B) + (A^2 * \<epsilon>\<^sup>2 / 2 +A *  \<epsilon> * x2) / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)"
+    using assms(2)
+    apply clarsimp
+    oops
+ 
 
 lemma STTexample6_arith:
   assumes "0 < A" "0 < B" "0 < \<epsilon>" "0 \<le> x2" "0 \<le> (t::real)" "- B \<le> k" "k \<le> A"
