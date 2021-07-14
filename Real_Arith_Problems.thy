@@ -133,8 +133,13 @@ proof-
     fix w 
     assume "\<bar>t - w\<bar> \<le> 1" and "w \<in> T"
     show " \<exists>L\<ge>0. \<forall>z\<in>cball x 1. \<forall>y\<in>cball x 1. \<bar>z\<^sup>2 - y\<^sup>2\<bar> \<le> L * \<bar>z - y\<bar>"
-
-    
+      apply (rule_tac x = 22 in exI)
+      thm allE allI
+      thm exE exI
+      thm conjI conjE
+      thm disjI1 disjI2 disjE
+      thm iffI iffE
+     (* apply (rule allE)*)
     sorry
 qed
 
@@ -157,12 +162,15 @@ proof-
   also have "... =x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
     apply clarsimp
     by (simp add: power2_eq_square)
+  finally have "(x2 - B * t)\<^sup>2 / (2 * B) = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 ".
   hence "?lhs = x1 + x2\<^sup>2 / (2 * B) "
-    by (simp add: calculation)
-  finally show  "?lhs \<le> S"
-    using key
+    by (simp add:)
+  thus  "?lhs \<le> S"
+    using assms(4)
     by simp
 qed
+
+lemma "(a:: real)*(b+c) = a* b + a* c"
 
 lemma STTexample5_arith:
   assumes "0 < A" "0 < B" "0 < \<epsilon>" "0 \<le> x2" "0 \<le> (t::real)" 
@@ -180,22 +188,24 @@ proof-
     by  clarsimp
 have r1: "t \<le>  \<epsilon> " using ghyp
   using assms(5) by force 
-  have "x2 * t \<le>  \<epsilon> * x2"
+  have des1: "x2 * t \<le>  \<epsilon> * x2"
     by (simp add: \<open>t \<le> \<epsilon>\<close> assms(4) mult.commute mult_right_mono)
-  have "A * t\<^sup>2 / 2 \<le> A * \<epsilon>\<^sup>2 / 2 "
+  have des2: "A * t\<^sup>2 / 2 \<le> A * \<epsilon>\<^sup>2 / 2 "
     by (simp add: \<open>t \<le> \<epsilon>\<close> assms(1) assms(5) power_mono)
-  hence "A^2 * t^2 /(2 * B) \<le> A^2 * \<epsilon>\<^sup>2 /(2 * B)  " using assms(2)
+  hence des3: "A^2 * t^2 /(2 * B) \<le> A^2 * \<epsilon>\<^sup>2 /(2 * B)  " using assms(2)
     apply clarsimp
     by (simp add: assms(1) frac_le mult_left_mono) 
-  have "A* t* x2 / B \<le> A * \<epsilon> * x2 / B " using r1 assms
+  have des4: "A* t* x2 / B \<le> A * \<epsilon> * x2 / B " using r1 assms
     by (metis div_0 divide_right_mono le_divide_eq_1_neg less_eq_real_def 
 mult_le_cancel_left_pos mult_le_cancel_right not_one_le_zero numeral_One)
-  have "?k0 = A * t\<^sup>2 / 2 + x2 * t + x1 + A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B) "
+  have "?k0 = A * t\<^sup>2 / 2 + x2 * t + x1 + A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B)" (is "_=?k1")
     by (simp add: calculation)
-  have "?k3 = x1 + x2\<^sup>2 / (2 * B) + (A^2 * \<epsilon>\<^sup>2 / 2 +A *  \<epsilon> * x2) / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)"
+  have "?k3 = x1 + x2\<^sup>2 / (2 * B) + (A^2 * \<epsilon>\<^sup>2 / 2 +A *  \<epsilon> * x2) / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)" 
     using assms(2)
-    apply clarsimp
-    oops
+    by (clarsimp simp: Groups.algebra_simps(18) power2_eq_square)
+  also have "... = x1 + x2\<^sup>2 / (2 * B) + A^2 * \<epsilon>\<^sup>2 / (2 * B) +A *  \<epsilon> * x2 / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)" (is "_=?k2")
+    by (clarsimp add: power2_eq_square add_divide_distrib)
+  oops
  
 
 lemma STTexample6_arith:
@@ -241,12 +251,48 @@ lemma LICSexample4c_arith1:
   shows "(A * t + v)\<^sup>2 \<le> 2 * b * (m - (A * t\<^sup>2 / 2 + v * t + x))" (is "_ \<le> ?rhs")
   oops
 
+lemma consprod: assumes  "(0::real) < b" "s \<le> t" 
+  shows " s / b \<le>  t / b"
+  using assms(1) assms(2) divide_right_mono by fastforce
 
 lemma LICSexample5_arith1:
   assumes "(0::real) < b" "0 \<le> t"
     and key: "v\<^sup>2 \<le> 2 * b * (m - x)"
   shows "v * t - b * t\<^sup>2 / 2 + x \<le> m"
-  oops
+proof-
+  have "(v - b* t)^2 \<ge>0 "
+    by simp
+  have "v^2 - 2*b*(m-x)\<le>0 " using assms(3)
+    by simp
+  hence "(v - b* t)^2 \<ge> v^2 - 2*b*(m-x) "
+    using \<open>0 \<le> (v - b * t)\<^sup>2\<close> by linarith
+  have cuad: "(v - b* t)^2 = v^2 -2 * v * b* t + b^2 * t^2 "
+    by (simp add: power2_diff power_mult_distrib)
+  have "v^2 -2 * v * b* t + b^2 * t^2 \<ge>  v^2 - 2*b*(m-x)"
+    using cuad \<open>v\<^sup>2 - 2 * b * (m - x) \<le> (v - b * t)\<^sup>2\<close> by auto
+  hence " 2 * b * (m-x) - v^2 \<ge> - v\<^sup>2 + 2 * v * b* t - b^2 * t^2 "
+    by auto
+  hence " 2 * b * (m-x) \<ge>  2 * v * b* t - b^2 * t^2 "
+    by simp
+  hence "2 * b * (m-x) / (2 * b) \<ge> (2 * v * b* t - b^2 * t^2) / (2 * b) " using assms(1) consprod
+    by (metis eq_divide_eq_numeral1(1) half_gt_zero_iff mult_2 mult_2_right)
+  hence "m - x \<ge> (2 * v * b* t - b^2 * t^2) / (2 * b) "
+    using assms(1) by auto 
+  have " (2 * v * b* t - b^2 * t^2) / (2 * b) = 2 * v * b * t / (2 * b) - b^2 * t^2 / (2 * b)  "
+    by (simp add: diff_divide_distrib)
+  also have "... = v * t - b^2 * t^2 / (2 * b)"
+    using assms(1) by auto
+  also have "... = v * t - b * t^2 / 2  "
+    apply clarsimp
+    by (simp add: power2_eq_square)
+  finally have r1: "(2 * v * b* t - b^2 * t^2) / (2 * b) =   v * t - b * t^2 / 2"
+    by simp
+  have "m - x \<ge>  v * t - b * t^2 / 2 "
+    using r1 \<open>(2 * v * b * t - b\<^sup>2 * t\<^sup>2) / (2 * b) \<le> m - x\<close> by auto
+  thus  "v * t - b * t\<^sup>2 / 2 + x \<le> m"
+    using \<open>v * t - b * t\<^sup>2 / 2 \<le> m - x\<close> by fastforce 
+qed
+
 
 lemma LICSexample5_arith2:
   assumes "(0::real) < b" "0 \<le> v" "\<forall>t\<in>{0..}. v * t - b * t\<^sup>2 / 2 + x \<le> m"
