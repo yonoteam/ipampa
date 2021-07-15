@@ -1,6 +1,7 @@
 (*  Title:       
     Author:      
     Maintainer:  
+https://behemoth.cl.cam.ac.uk/search/
 *)
 
 section \<open> Examples \<close>
@@ -66,20 +67,21 @@ have id1:  "(cos t)^2 + (sin t)^2 = 1"
     by presburger
   also have "... = x^2 * (cos t)^2 + x^2 * (sin t)^2  + y^2 * (sin t)^2 + y^2 * (cos t)^2  "
     by fastforce
-  have "... = x^2 + y^2 "
+  also have "... = x^2 + y^2 "
     by (smt (z3) add_diff_cancel_left' diff_add_cancel id1 is_num_normalize(1)
  mult.commute mult_numeral_1 numeral_One vector_space_over_itself.scale_left_diff_distrib)
   finally show  "?e\<^sup>2 + ?f\<^sup>2 = x\<^sup>2 + y\<^sup>2"
     by (simp add: \<open>x\<^sup>2 * (cos t)\<^sup>2 + 2 * x * y * cos t * sin t + y\<^sup>2 * (sin t)\<^sup>2 
 + (y\<^sup>2 * (cos t)\<^sup>2 - 2 * x * y * sin t * cos t + x\<^sup>2 * (sin t)\<^sup>2) = x\<^sup>2 * (cos t)\<^sup>2
  + x\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (cos t)\<^sup>2\<close> \<open>x\<^sup>2 * (cos t)\<^sup>2 + x\<^sup>2 * (sin t)\<^sup>2
- + y\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2\<close> calculation) 
+ + y\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2\<close>) 
 qed
 
 lemma mult_abs_right_mono: "a < b \<Longrightarrow> a * \<bar>c\<bar> \<le> b * \<bar>c\<bar>" for c::real
   by (simp add: mult_right_mono)
 
 lemma "(a:: real)* a^n = a^(Suc n)"
+  by (rule semiring_normalization_rules(27))
 
 lemma dyn_cons_qty_arith: "(36::real) * (x1\<^sup>2 * (x1 * x2 ^ 3)) - 
   (- (24 * (x1\<^sup>2 * x2) * x1 ^ 3 * (x2)\<^sup>2) - 12 * (x1\<^sup>2 * x2) * x1 * x2 ^ 4) - 
@@ -91,7 +93,7 @@ proof-
   have "?t2 = ?t6"
     by (metis (no_types, hide_lams)
  mult.assoc mult.left_commute power2_eq_square power3_eq_cube power_add_numeral2
- power_commutes semiring_norm(2) semiring_norm(7))
+ semiring_norm(2) semiring_norm(7))
   have h1: "?t3 = ?t5"
     by (simp add: semiring_normalization_rules(27))
   have "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t2 + ?t3 - ?t5"
@@ -134,20 +136,26 @@ proof-
     assume "\<bar>t - w\<bar> \<le> 1" and "w \<in> T"
     show " \<exists>L\<ge>0. \<forall>z\<in>cball x 1. \<forall>y\<in>cball x 1. \<bar>z\<^sup>2 - y\<^sup>2\<bar> \<le> L * \<bar>z - y\<bar>"
       apply (rule_tac x = 22 in exI)
-      thm allE allI
-      thm exE exI
+      thm allE ballE  allI ballI
+      thm exE exI bexE bexI
       thm conjI conjE
       thm disjI1 disjI2 disjE
       thm iffI iffE
      (* apply (rule allE)*)
-    sorry
-qed
+      sorry
+    oops
 
-lemma "((a:: real) + b) / c = a / c + b / c"
-  by (simp add: add_divide_distrib)
+lemma sumfrac: "((a:: real) + b) / c = a / c + b / c" "(a-b)/c= a/c - b/c"
+   apply (clarsimp simp: add_divide_distrib)
+  apply (clarsimp simp:  diff_divide_distrib)
+  done
+
+lemma frac: "(1:: real)/ a * 1 / b = 1 / (a * b) "
+  by simp
 
 lemma "((x::real)-y)^2  / (2 * B)   = x^2 / (2 * B)  -2 * x * y /(2 * B)  + y^2  / (2 * B)"
- by (simp add: add_divide_distrib)
+  apply (simp add: power2_diff diff_divide_distrib add_divide_distrib)
+  done
 
 lemma STTexample3a_arith:
   assumes "0 < (B::real)" "0 \<le> t" "0 \<le> x2" and key: "x1 + x2\<^sup>2 / (2 * B) \<le> S"
@@ -171,6 +179,7 @@ proof-
 qed
 
 lemma "(a:: real)*(b+c) = a* b + a* c"
+  by (simp add: Groups.algebra_simps(18))
 
 lemma STTexample5_arith:
   assumes "0 < A" "0 < B" "0 < \<epsilon>" "0 \<le> x2" "0 \<le> (t::real)" 
@@ -186,6 +195,7 @@ proof-
     by (simp add: add_divide_distrib)
   also have "... = A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B) "
     by  clarsimp
+  finally have coso1: "(A * t + x2)\<^sup>2 / (2 * B) = A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B) ".
 have r1: "t \<le>  \<epsilon> " using ghyp
   using assms(5) by force 
   have des1: "x2 * t \<le>  \<epsilon> * x2"
@@ -197,14 +207,14 @@ have r1: "t \<le>  \<epsilon> " using ghyp
     by (simp add: assms(1) frac_le mult_left_mono) 
   have des4: "A* t* x2 / B \<le> A * \<epsilon> * x2 / B " using r1 assms
     by (metis div_0 divide_right_mono le_divide_eq_1_neg less_eq_real_def 
-mult_le_cancel_left_pos mult_le_cancel_right not_one_le_zero numeral_One)
+mult_le_cancel_left_pos mult_le_cancel_right not_one_le_zero)
   have "?k0 = A * t\<^sup>2 / 2 + x2 * t + x1 + A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B)" (is "_=?k1")
-    by (simp add: calculation)
+    by (simp add: coso1)
   have "?k3 = x1 + x2\<^sup>2 / (2 * B) + (A^2 * \<epsilon>\<^sup>2 / 2 +A *  \<epsilon> * x2) / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)" 
     using assms(2)
     by (clarsimp simp: Groups.algebra_simps(18) power2_eq_square)
   also have "... = x1 + x2\<^sup>2 / (2 * B) + A^2 * \<epsilon>\<^sup>2 / (2 * B) +A *  \<epsilon> * x2 / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)" (is "_=?k2")
-    by (clarsimp add: power2_eq_square add_divide_distrib)
+    by (clarsimp simp: frac add_divide_distrib)
   oops
  
 
@@ -255,6 +265,11 @@ lemma consprod: assumes  "(0::real) < b" "s \<le> t"
   shows " s / b \<le>  t / b"
   using assms(1) assms(2) divide_right_mono by fastforce
 
+lemma consprod2: assumes  "(0::real) < b" "s \<le> t" 
+  shows " b* s \<le> b * t"
+  by (simp add: assms(1) assms(2))
+
+
 lemma LICSexample5_arith1:
   assumes "(0::real) < b" "0 \<le> t"
     and key: "v\<^sup>2 \<le> 2 * b * (m - x)"
@@ -293,11 +308,37 @@ proof-
     using \<open>v * t - b * t\<^sup>2 / 2 \<le> m - x\<close> by fastforce 
 qed
 
-
 lemma LICSexample5_arith2:
   assumes "(0::real) < b" "0 \<le> v" "\<forall>t\<in>{0..}. v * t - b * t\<^sup>2 / 2 + x \<le> m"
   shows "v\<^sup>2 \<le> 2 * b * (m - x)"
-  oops
+proof-
+  have h1: "v / b \<ge> 0 "
+    using assms(1) assms(2) by auto
+have h2: "2 *b > 0 "
+    using assms(1) by simp
+  have "v * (v/b) - b * (v/b)\<^sup>2 / 2 + x \<le> m "
+    using assms(3) apply (erule_tac x = "v/b" in ballE) 
+     apply simp
+    using h1 by simp
+  have "v * (v/b) - b * (v/b)\<^sup>2 / 2 + x = v^2 / b - 1/2 * v^2 / b + x"
+    by (clarsimp simp: power2_eq_square)
+  also have "... = 1/2 * v^2 /b + x "
+    by simp
+  also have "... = v^2 / (2*b)+x"
+    by simp
+  finally have "v * (v/b) - b * (v/b)\<^sup>2 / 2 + x = v^2 / (2*b)+x ".
+  hence "v^2 / (2*b)+x \<le> m"
+    using \<open>v * (v / b) - b * (v / b)\<^sup>2 / 2 + x \<le> m\<close> by auto
+  hence "v^2 / (2*b) \<le> m - x" 
+    by auto
+  hence "(2*b) * v^2 / (2*b) \<le> (2 * b)* (m - x) " using h2 consprod2
+    by (metis times_divide_eq_right)
+  thus "v^2 \<le> 2 * b* (m - x) "
+    using h2 by auto
+qed
+
+lemma "(p  \<Longrightarrow> False) \<Longrightarrow> \<not> p  "
+  by (rule notI)
 
 lemma LICSexample6_arith1:
   assumes "0 \<le> v" "0 < b" "0 \<le> A" "0 \<le> \<epsilon>" and guard: "\<forall>t\<in>{0..}. (\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> \<tau> \<le> \<epsilon>) \<longrightarrow> (\<forall>\<tau>\<in>{0..}. 
