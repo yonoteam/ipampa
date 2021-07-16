@@ -11,9 +11,11 @@ verification components.\<close>
 
 theory Real_Arith_Problems
   imports "HOL-Analysis.Analysis"
+  "HOL-Eisbach.Eisbach"
 
 begin
 
+method mi_metodo = (simp add: power2_diff power_mult_distrib)
 
 subsection \<open> Basic \<close>
 
@@ -31,7 +33,7 @@ lemma is_interval_real_nonneg[simp]: "is_interval {x:: real. x\<ge>0}"
   by (simp add: is_interval_1)
 
 lemma "((a::real)-b)^2 = a^2 - 2 * a * b + b^2"
-by (simp add: power2_diff power_mult_distrib)
+by mi_metodo
 
 lemma norm_rotate_eq:
   fixes x :: "'a:: {banach,real_normed_field}"
@@ -226,7 +228,15 @@ lemma STTexample6_arith:
   oops
 
 
-subsubsection \<open> STTT Tutorial: Example 7 \<close>
+  subsubsection \<open> STTT Tutorial: Example 7 \<close>
+
+lemma consprod: assumes  "(0::real) < b" "s \<le> t" 
+  shows " s / b \<le>  t / b"
+  using assms(1) assms(2) divide_right_mono by fastforce
+
+lemma consprod2: assumes  "(0::real) < b" "s \<le> t" 
+  shows " b* s \<le> b * t"
+  by (simp add: assms(1) assms(2))
 
 lemma STTexample7_arith1:
   assumes "(0::real) < A" "0 < b" "0 < \<epsilon>" "0 \<le> v" "0 \<le> t" "k \<le> A"
@@ -235,11 +245,61 @@ lemma STTexample7_arith1:
   shows "k * t\<^sup>2 / 2 + v * t + x + (k * t + v)\<^sup>2 / (2 * b) \<le> S" (is "?lhs \<le> S")
   oops
 
+lemma "(a:: real)+ a * b = a * (1 + b) "
+  by (simp add: ring_class.ring_distribs(1))
+
+lemma "(v:: real) * t + k * t\<^sup>2 / 2 = (v + k * t / 2) * t"
+  by (simp add: power2_eq_square ring_class.ring_distribs(2))
+  
+
 lemma STTexample7_arith2:
   assumes "(0::real) < b" "0 \<le> v" "0 \<le> t" "k \<le> - b"
     and key: "x + v\<^sup>2 / (2 * b) \<le> S" 
     and guard: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> 0 \<le> k * \<tau> + v \<and> \<tau> \<le> \<epsilon>"
   shows "k * t\<^sup>2 / 2 + v * t + x + (k * t + v)\<^sup>2 / (2 * b) \<le> S" (is "?lhs \<le> S")
+proof-
+  have des1: " 0 \<le> k * t / 2 + v" 
+    using assms(6) assms(2) assms(3) by force
+  have " k / b \<le> -1" using assms(1) assms(4) consprod
+    by fastforce
+  hence des2: "1 + k / b \<le> 0"
+    by simp
+  have "(k * t + v)\<^sup>2  = (k^2 * t^2 + 2 * k * t * v + v^2)"
+    by (simp add: power2_sum power_mult_distrib)
+  have "(k * t + v)\<^sup>2/ (2 * b) = (k^2 * t^2 + 2 * k * t * v + v^2) / (2 * b)"
+    by (simp add: \<open>(k * t + v)\<^sup>2 = k\<^sup>2 * t\<^sup>2 + 2 * k * t * v + v\<^sup>2\<close>)
+  also have "... = k^2 * t^2 / (2 * b)+ 2 * k * t * v/ (2 * b) + v^2/ (2 * b) "
+    by (simp add: add_divide_distrib)
+  also have "... = k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b) "
+    by clarsimp
+  finally have "(k * t + v)\<^sup>2/ (2 * b) = k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b) ".
+  hence "?lhs = k * t\<^sup>2 / 2 + v * t + x + k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b) "
+    by simp
+  also have "... = (v * t + k * t * v/ b) + (k * t\<^sup>2 / 2 + k^2 * t^2 / (2 * b)) + x + v^2/ (2 * b)"
+    by auto
+  also have "... = v * t * (1 + k / b) + k * t^2 / 2 * (1 + k / b) + x + v^2 / (2 * b)"
+    apply (clarsimp simp: ring_distribs(1))
+    by (metis (no_types, hide_lams) divide_divide_eq_right mult_numeral_1 
+power2_eq_square times_divide_eq_left)
+  also have "... = (v * t + k * t^2 /2) * (1 + k / b) + x + v^2 / (2 * b) "
+    apply clarsimp
+    by (simp add: ring_class.ring_distribs(2))
+  also have "... =  (v + k * t / 2) * t  * (1 + k / b) + x + v^2 / (2 * b) "
+    apply clarsimp
+    by (simp add: power2_eq_square ring_class.ring_distribs(2))
+  finally have "?lhs = (v + k * t / 2) * t  * (1 + k / b) + x + v^2 / (2 * b)" (is "_ = ?d")
+    by simp
+  have "(v + k * t / 2) * t \<ge> 0" using assms(3) des1
+    by fastforce
+  hence "(v + k * t / 2) * t  * (1 + k / b) \<le> 0 " 
+    using des2 divide_self_if neg_divide_le_eq by force 
+  hence "?d \<le>  x + v^2 / (2 * b)"
+    by simp
+  hence "?lhs \<le> x + v^2 / (2 * b)"
+    by (simp add: \<open>?d \<le> x + v\<^sup>2 / (2 * b)\<close> \<open>k * t\<^sup>2 / 2 + v * t + x + (k * t + v)\<^sup>2 / (2 * b) = ?d\<close>) 
+  thus "?lhs \<le> S" 
+    using assms(5)
+    by auto
   oops
 
 lemma STTexample9a_arith:
@@ -260,14 +320,6 @@ lemma LICSexample4c_arith1:
     and guard: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> (0::real) \<le> A * \<tau> + v \<and> \<tau> \<le> \<epsilon>"
   shows "(A * t + v)\<^sup>2 \<le> 2 * b * (m - (A * t\<^sup>2 / 2 + v * t + x))" (is "_ \<le> ?rhs")
   oops
-
-lemma consprod: assumes  "(0::real) < b" "s \<le> t" 
-  shows " s / b \<le>  t / b"
-  using assms(1) assms(2) divide_right_mono by fastforce
-
-lemma consprod2: assumes  "(0::real) < b" "s \<le> t" 
-  shows " b* s \<le> b * t"
-  by (simp add: assms(1) assms(2))
 
 
 lemma LICSexample5_arith1:
@@ -337,8 +389,8 @@ have h2: "2 *b > 0 "
     using h2 by auto
 qed
 
-lemma "(p  \<Longrightarrow> False) \<Longrightarrow> \<not> p  "
-  by (rule notI)
+(*lemma "(p  \<Longrightarrow> False) \<Longrightarrow> \<not> p  "
+  by (rule notI)*)
 
 lemma LICSexample6_arith1:
   assumes "0 \<le> v" "0 < b" "0 \<le> A" "0 \<le> \<epsilon>" and guard: "\<forall>t\<in>{0..}. (\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> \<tau> \<le> \<epsilon>) \<longrightarrow> (\<forall>\<tau>\<in>{0..}. 
