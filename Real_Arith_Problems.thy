@@ -300,7 +300,7 @@ power2_eq_square times_divide_eq_left)
   thus "?lhs \<le> S" 
     using assms(5)
     by auto
-  oops
+qed
 
 lemma STTexample9a_arith:
   "(10*x-10*r) * v/4 + v\<^sup>2/2 + (x-r)*(2*r-2*x-3 * v)/2 + v * (2*r-2*x-3 * v)/2 \<le> (0::real)" 
@@ -393,7 +393,8 @@ qed
   by (rule notI)*)
 
 lemma LICSexample6_arith1:
-  assumes "0 \<le> v" "0 < b" "0 \<le> A" "0 \<le> \<epsilon>" and guard: "\<forall>t\<in>{0..}. (\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> \<tau> \<le> \<epsilon>) \<longrightarrow> (\<forall>\<tau>\<in>{0..}. 
+  assumes "0 \<le> v" "0 < b" "0 \<le> A" "0 \<le> \<epsilon>" 
+    and guard: "\<forall>t\<in>{0..}. (\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> \<tau> \<le> \<epsilon>) \<longrightarrow> (\<forall>\<tau>\<in>{0..}. 
   A * t * \<tau> + v * \<tau> - b * \<tau>\<^sup>2 / 2 + (A * t\<^sup>2 / 2 + v * t + x) \<le> (m::real))"
   shows "v\<^sup>2 + (A * (A * \<epsilon>\<^sup>2 + 2 * \<epsilon> * v) + b * (A * \<epsilon>\<^sup>2 + 2 * \<epsilon> * v)) \<le> 2 * b * (m - x)"
   oops
@@ -410,7 +411,50 @@ lemma ETCS_Prop1_arith2:
       and key: "v\<^sup>2 - \<delta>\<^sup>2 \<le> 2 * b * (m - x)" "m \<le> v * t - b * t\<^sup>2 / 2 + x"
       and guard: "\<forall>\<tau>\<in>{0--t}. b * \<tau> \<le> v"
     shows "v - b * t \<le> \<delta>"
-  oops
+proof-
+  have d0: "2 * b > 0"
+    using assms(3) by simp
+  have "m - x \<le> v * t - b * t\<^sup>2 / 2"
+    using assms(7) by simp
+  hence d1: "m - x - v^2 /(2* b) \<le> v * t - b * t\<^sup>2 / 2 - v^2 /(2* b)"
+    by simp
+  have " - (v - b * t)\<^sup>2 = - (v^2 - 2 * v * b * t + b^2 * t^2)"
+    by mi_metodo
+  hence "- (v - b * t)\<^sup>2/(2* b) = - (v^2 - 2 * v * b * t + b^2 * t^2) /(2* b)"
+    by simp
+  also have "... = - (v^2 /(2* b) - 2 * v * b * t /(2* b) + b^2 * t^2 /(2* b))"
+    by (metis (no_types, hide_lams) add_diff_cancel_right' sumfrac(1) uminus_add_conv_diff)
+  also have "... = - (v^2 /(2* b) - v * t + b * t^2 / 2) "
+    using assms(3) apply clarsimp 
+    by (simp add: power2_eq_square)
+  also have "... = - v\<^sup>2 /(2* b) + v * t - b * t^2 / 2"
+    by auto
+  finally have "- (v - b * t)\<^sup>2/(2* b) =  - v\<^sup>2 /(2* b) + v * t - b * t^2 / 2 "
+    by simp
+  hence "m - x - v^2 /(2* b) \<le> - (v - b * t)\<^sup>2/(2* b)"
+    using d1 by simp
+  hence d2: "(2* b) *(m - x - v^2 /(2* b)) \<le> (2 * b) * (-(v - b * t)\<^sup>2 / (2* b))"
+    using d0 consprod2
+    by blast
+  have eq1: "(2* b) *(m - x - v^2 /(2* b)) = (2* b) *(m - x) - v^2"
+    using assms(3) by (simp add: Groups.algebra_simps(19))
+  have eq2: "(2 * b) * (-(v - b * t)\<^sup>2 / (2* b)) = -(v - b * t)\<^sup>2"
+    using d0 by auto
+  have d3: " (2* b) *(m - x) - v^2 \<le> -(v - b * t)\<^sup>2 " 
+    using eq1 eq2 d2 by simp
+  have "- \<delta>\<^sup>2 \<le> (2* b) *(m - x) - v^2 "
+    using assms(6) by simp
+  hence "- \<delta>\<^sup>2 \<le> -(v - b * t)\<^sup>2"
+    using d3 by auto
+  hence d4: "(v - b * t)\<^sup>2 \<le> \<delta>\<^sup>2"
+    by simp
+  have " b * t \<le> v" using assms(8)
+    by simp
+  hence "v - b * t \<ge> 0" 
+    by simp
+  thus "v - b * t \<le> \<delta>"
+    using d4 assms(2) pos2 power_mono_iff by blast
+qed
 
 subsection \<open> Advanced \<close>
 
