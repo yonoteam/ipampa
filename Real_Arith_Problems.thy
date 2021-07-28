@@ -2,6 +2,10 @@
     Author:      
     Maintainer:  
 https://behemoth.cl.cam.ac.uk/search/
+https://arxiv.org/pdf/2102.03003.pdf
+https://math.stackexchange.com/
+https://mathoverflow.net/
+https://stackoverflow.com/
 *)
 
 section \<open> Examples \<close>
@@ -15,7 +19,9 @@ theory Real_Arith_Problems
 
 begin
 
-method mi_metodo = (simp add: power2_diff power_mult_distrib)
+method mi_metodo = (simp add: power2_diff power2_sum power_mult_distrib)
+
+
 
 subsection \<open> Basic \<close>
 
@@ -30,9 +36,10 @@ lemma "(Collect ((\<le>) (0::real))) = {x:: real. x\<ge>0}"
   by simp
 
 lemma is_interval_real_nonneg[simp]: "is_interval {x:: real. x\<ge>0}"
-  by (simp add: is_interval_1)
+  using is_interval_1 by force 
 
 lemma "((a::real)-b)^2 = a^2 - 2 * a * b + b^2"
+  apply (subst power2_diff[of a b])
 by mi_metodo
 
 lemma norm_rotate_eq:
@@ -41,7 +48,7 @@ lemma norm_rotate_eq:
     and "(x * cos t + y * sin t)\<^sup>2 + (y * cos t - x * sin t)\<^sup>2 = x\<^sup>2 + y\<^sup>2" (is "?e^2+?f^2 =_")
 proof-
   have exp1: "?a^2 = x^2 * (cos t)^2 -2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?c")
-    by (simp add: power2_diff power_mult_distrib)
+    by mi_metodo
   have exp2: "?b^2 = x^2 * (sin t)^2 +2 * x * y * sin t * cos t + y^2 * (cos t)^2" (is "_=?d")
     by (simp add: power2_sum power_mult_distrib)
   have id1:  "(cos t)^2 + (sin t)^2 = 1"
@@ -61,7 +68,7 @@ next
   have exp3: "?e^2 = x^2 * (cos t)^2 +2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?g")
     by (simp add: power2_sum power_mult_distrib)
   have exp4: "?f^2 =  y^2 * (cos t)^2 -2 * x * y * sin t * cos t + x^2 * (sin t)^2  "(is "_= ?h")
-    by (simp add: power2_diff power_mult_distrib)
+     by mi_metodo
 have id1:  "(cos t)^2 + (sin t)^2 = 1"
     by simp
   have "?e\<^sup>2 + ?f\<^sup>2 = ?g+?h "
@@ -156,18 +163,17 @@ lemma frac: "(1:: real)/ a * 1 / b = 1 / (a * b) "
   by simp
 
 lemma "((x::real)-y)^2  / (2 * B)   = x^2 / (2 * B)  -2 * x * y /(2 * B)  + y^2  / (2 * B)"
-  apply (simp add: power2_diff diff_divide_distrib add_divide_distrib)
-  done
+  by (simp add: power2_diff diff_divide_distrib add_divide_distrib)
 
 lemma STTexample3a_arith:
   assumes "0 < (B::real)" "0 \<le> t" "0 \<le> x2" and key: "x1 + x2\<^sup>2 / (2 * B) \<le> S"
   shows "x2 * t - B * t\<^sup>2 / 2 + x1 + (x2 - B * t)\<^sup>2 / (2 * B) \<le> S" (is "?lhs \<le> S")
 proof-
   have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
-    by (simp add: power2_diff power_mult_distrib)
+     by mi_metodo
   hence "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) " (is "_ = ?f")
     by simp
-  also have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
+   also have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
     by (simp add: add_divide_distrib  diff_divide_distrib)
   also have "... =x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
     apply clarsimp
@@ -198,8 +204,8 @@ proof-
   also have "... = A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B) "
     by  clarsimp
   finally have coso1: "(A * t + x2)\<^sup>2 / (2 * B) = A^2 * t^2 /(2 * B) + A * t * x2 / B + x2^2 /(2 * B) ".
-have r1: "t \<le>  \<epsilon> " using ghyp
-  using assms(5) by force 
+  have r1: "t \<le>  \<epsilon> "
+    using ghyp assms(5) by force 
   have des1: "x2 * t \<le>  \<epsilon> * x2"
     by (simp add: \<open>t \<le> \<epsilon>\<close> assms(4) mult.commute mult_right_mono)
   have des2: "A * t\<^sup>2 / 2 \<le> A * \<epsilon>\<^sup>2 / 2 "
@@ -250,7 +256,8 @@ lemma "(a:: real)+ a * b = a * (1 + b) "
 
 lemma "(v:: real) * t + k * t\<^sup>2 / 2 = (v + k * t / 2) * t"
   by (simp add: power2_eq_square ring_class.ring_distribs(2))
-  
+
+method divide_simplify = (clarsimp simp: add_divide_distrib)
 
 lemma STTexample7_arith2:
   assumes "(0::real) < b" "0 \<le> v" "0 \<le> t" "k \<le> - b"
@@ -265,15 +272,12 @@ proof-
   hence des2: "1 + k / b \<le> 0"
     by simp
   have "(k * t + v)\<^sup>2  = (k^2 * t^2 + 2 * k * t * v + v^2)"
-    by (simp add: power2_sum power_mult_distrib)
+    by mi_metodo
   have "(k * t + v)\<^sup>2/ (2 * b) = (k^2 * t^2 + 2 * k * t * v + v^2) / (2 * b)"
     by (simp add: \<open>(k * t + v)\<^sup>2 = k\<^sup>2 * t\<^sup>2 + 2 * k * t * v + v\<^sup>2\<close>)
-  also have "... = k^2 * t^2 / (2 * b)+ 2 * k * t * v/ (2 * b) + v^2/ (2 * b) "
-    by (simp add: add_divide_distrib)
-  also have "... = k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b) "
-    by clarsimp
-  finally have "(k * t + v)\<^sup>2/ (2 * b) = k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b) ".
-  hence "?lhs = k * t\<^sup>2 / 2 + v * t + x + k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b) "
+  also have "... = k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b)"
+    by divide_simplify
+  finally have "?lhs = k * t\<^sup>2 / 2 + v * t + x + k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b) "
     by simp
   also have "... = (v * t + k * t * v/ b) + (k * t\<^sup>2 / 2 + k^2 * t^2 / (2 * b)) + x + v^2/ (2 * b)"
     by auto
@@ -314,11 +318,56 @@ lemma LICSexample4a_arith:
     shows "(A * t + v)\<^sup>2 \<le> 2 * b * (m - (A * t\<^sup>2 / 2 + v * t + x))"
   oops
 
+lemma "(a:: real) * (b+ c) = a * b + a * c"
+  oops
+
 lemma LICSexample4c_arith1:
   assumes "v\<^sup>2 \<le> 2 * b * (m - x)" "0 \<le> t" "A \<ge> 0" "b > 0"
     and key: "v\<^sup>2 + (A * (A * \<epsilon>\<^sup>2 + 2 * \<epsilon> * v) + b * (A * \<epsilon>\<^sup>2 + 2 * \<epsilon> * v)) \<le> 2 * b * (m - x)"
     and guard: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> (0::real) \<le> A * \<tau> + v \<and> \<tau> \<le> \<epsilon>"
   shows "(A * t + v)\<^sup>2 \<le> 2 * b * (m - (A * t\<^sup>2 / 2 + v * t + x))" (is "_ \<le> ?rhs")
+proof-
+  have " ?rhs = 2 * b *(m - A * t\<^sup>2 / 2 - v * t - x)"
+    by simp
+  also have "... = 2 * b * m - 2 * b * (A * t^2 / 2) - 2 * b * v * t - 2 * b * x"
+    by (simp add: cross3_simps(25))
+  also have "... = 2 * b * (m- x) - 2 * b * (A * t^2 / 2) - 2 * b * v * t"
+    by (simp add: cross3_simps(25))
+  also have "... =  2 * b * (m- x) - b * A * t^2  - 2 * b * v * t "
+    by simp
+  also have "... = 2 * b * (m- x) - b * (A * t^2  + 2 * v * t)"
+    by (simp add: vector_space_over_itself.scale_right_distrib)
+  finally have exp1: "?rhs =  2 * b * (m- x) - b * (A * t^2  + 2 * v * t)"
+    by simp
+  have exp2: "t \<le> \<epsilon>"
+    using guard by (simp add: assms(2))
+  have "v \<ge> 0" 
+    using assms(6) assms(2) mult_not_zero by auto
+  hence " 2 * t * v \<le> 2 * \<epsilon> * v" and "A * t^2 \<le> A * \<epsilon>^2"
+    using assms(3) exp2 assms(2) mult_right_mono apply auto[1]
+    by (simp add: assms(2) assms(3) guard mult_mono)
+  hence exp3: "A * t^2 + 2 * t * v \<le> A * \<epsilon>^2 + 2 * \<epsilon> * v"
+    by simp
+  hence exp4: "A *(A * t^2 + 2 * t * v) \<le> A* (A * \<epsilon>^2 + 2 * \<epsilon> * v)"
+    by (simp add: assms(3) ordered_comm_semiring_class.comm_mult_left_mono)
+  have "b *(A * t^2 + 2 * t * v) \<le> b* (A * \<epsilon>^2 + 2 * \<epsilon> * v)"
+    using exp3 assms(4) by auto 
+  hence "v\<^sup>2 + (A * (A * t\<^sup>2 + 2 * t * v) + b * (A * t\<^sup>2 + 2 * t * v)) \<le> v\<^sup>2 + (A * (A * \<epsilon>\<^sup>2 + 2 * \<epsilon> * v) + b * (A * \<epsilon>\<^sup>2 + 2 * \<epsilon> * v))"
+    using exp4 by auto
+  hence exp5: "v\<^sup>2 + (A * (A * t\<^sup>2 + 2 * t * v) + b * (A * t\<^sup>2 + 2 * t * v)) \<le> 2 * b * (m - x)" (is "?f \<le> _")
+    using assms(5) by simp
+  have "?f = v^2 + A * A * t\<^sup>2 + 2 * A * t * v + b * A * t\<^sup>2 + 2 * b * t * v" (is "_ = ?g")
+    by (clarsimp simp: algebra_simps(18))
+  hence "?g \<le> 2 * b * (m - x) " 
+    using exp5 by simp
+  hence "v^2 + A * A * t\<^sup>2 + 2 * A * t * v \<le> 2 * b * (m - x) - b * A * t\<^sup>2 - 2 * b * t * v"
+    by simp
+  hence "A * A * t\<^sup>2 + 2 * A * t * v + v^2 \<le> 2 * b * (m - x) -2* b * A * t\<^sup>2 / 2- 2 * b * t * v "
+    by simp
+  hence "(A * t + v)^2  \<le> 2 * b * (m - x) -2* b * A * t\<^sup>2 / 2- 2 * b * t * v"
+    
+   
+
   oops
 
 
@@ -334,7 +383,7 @@ proof-
   hence "(v - b* t)^2 \<ge> v^2 - 2*b*(m-x) "
     using \<open>0 \<le> (v - b * t)\<^sup>2\<close> by linarith
   have cuad: "(v - b* t)^2 = v^2 -2 * v * b* t + b^2 * t^2 "
-    by (simp add: power2_diff power_mult_distrib)
+     by mi_metodo
   have "v^2 -2 * v * b* t + b^2 * t^2 \<ge>  v^2 - 2*b*(m-x)"
     using cuad \<open>v\<^sup>2 - 2 * b * (m - x) \<le> (v - b * t)\<^sup>2\<close> by auto
   hence " 2 * b * (m-x) - v^2 \<ge> - v\<^sup>2 + 2 * v * b* t - b^2 * t^2 "
@@ -409,7 +458,7 @@ lemma ETCS_arith1:
 lemma ETCS_Prop1_arith2:
   assumes "0 \<le> v" "0 \<le> \<delta>" "0 < b" "x \<le> m" "0 \<le> (t::real)"
       and key: "v\<^sup>2 - \<delta>\<^sup>2 \<le> 2 * b * (m - x)" "m \<le> v * t - b * t\<^sup>2 / 2 + x"
-      and guard: "\<forall>\<tau>\<in>{0--t}. b * \<tau> \<le> v"
+      and guard: "\<forall>\<tau>\<in> closed_segment 0 t. b * \<tau> \<le> v"
     shows "v - b * t \<le> \<delta>"
 proof-
   have d0: "2 * b > 0"
@@ -456,11 +505,55 @@ proof-
     using d4 assms(2) pos2 power_mono_iff by blast
 qed
 
+(*
+Aquí iré haciendo pruebas de algunas herramientas de Eisbach
+*)
+method elimconj = (rule impI, erule conjE)
+
+lemma "P \<and> Q \<longrightarrow> P"
+  by elimconj
+
+named_theorems eliminacion
+
+declare conjE[eliminacion]
+
+method elimconj2 = ((rule impI, (erule eliminacion)?) | assumption)+
+
+lemma "P \<and> Q \<longrightarrow> P"
+  by elimconj2
+
+named_theorems introduccion
+
+declare conjI [introduccion] and impI [introduccion]
+
+method elimconj3 = ((rule introduccion, (erule eliminacion)?) | assumption)+
+
+lemma "P \<and> Q \<longrightarrow> P"
+  by elimconj3
+
+method rule_twice uses my_rule =
+(rule my_rule, rule my_rule)
+
+lemma "P \<and> P \<and> P \<Longrightarrow> P"
+  by (rule_twice my_rule: conjE)
+
+lemma "P \<Longrightarrow> P \<Longrightarrow> P \<Longrightarrow> P"
+  by blast
+
+(* (auto 0 3 intro!: teorema1 simp: teorema2 elim: teorema 3 dest: teorema 4) *)
+
+
+
+
+
 subsection \<open> Advanced \<close>
+
+thm has_derivative_def
+thm tendsto_def
 
 lemma has_vderiv_mono_test:
   assumes T_hyp: "is_interval T" 
-    and d_hyp: "D f = f' on T"
+    and d_hyp: "(f has_vderiv_on f') T"
     and xy_hyp: "x\<in>T" "y\<in>T" "x \<le> y" 
   shows "\<forall>x\<in>T. (0::real) \<le> f' x \<Longrightarrow> f x \<le> f y"
     and "\<forall>x\<in>T. f' x \<le> 0 \<Longrightarrow> f x \<ge> f y"
