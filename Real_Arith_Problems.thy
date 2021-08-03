@@ -249,6 +249,8 @@ lemma STTexample7_arith1:
     and "x + v\<^sup>2 / (2 * b) + (A * (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * v) / b + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * v)) \<le> S" (is "?expr1 \<le> S")
     and guard: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> 0 \<le> k * \<tau> + v \<and> \<tau> \<le> \<epsilon>"
   shows "k * t\<^sup>2 / 2 + v * t + x + (k * t + v)\<^sup>2 / (2 * b) \<le> S" (is "?lhs \<le> S")
+proof-
+  have "k * t\<^sup>2 / 2 + v * t + x + (k * t + v)\<^sup>2 / (2 * b) \<le> S"
   oops
 
 lemma "(a:: real)+ a * b = a * (1 + b) "
@@ -318,7 +320,7 @@ lemma LICSexample4a_arith:
     shows "(A * t + v)\<^sup>2 \<le> 2 * b * (m - (A * t\<^sup>2 / 2 + v * t + x))"
   oops
 
-lemma "(a:: real) * (b+ c) = a * b + a * c"
+lemma "(a:: real) * a = a^2"
   oops
 
 lemma LICSexample4c_arith1:
@@ -362,13 +364,21 @@ proof-
     using exp5 by simp
   hence "v^2 + A * A * t\<^sup>2 + 2 * A * t * v \<le> 2 * b * (m - x) - b * A * t\<^sup>2 - 2 * b * t * v"
     by simp
-  hence "A * A * t\<^sup>2 + 2 * A * t * v + v^2 \<le> 2 * b * (m - x) -2* b * A * t\<^sup>2 / 2- 2 * b * t * v "
+  hence exp6: "A * A * t\<^sup>2 + 2 * A * t * v + v^2 \<le> 2 * b * (m - x) -2* b * A * t\<^sup>2 / 2- 2 * b * t * v"
     by simp
-  hence "(A * t + v)^2  \<le> 2 * b * (m - x) -2* b * A * t\<^sup>2 / 2- 2 * b * t * v"
-    
-   
-
-  oops
+  have "(A * t + v)^2  = A * A * t\<^sup>2 + 2 * A * t * v + v^2"
+    by (simp add: power2_diff power2_sum power_mult_distrib semiring_normalization_rules(29))
+  have "2 * b * (m - x) -2* b * A * t\<^sup>2 / 2- 2 * b * t * v = 2 * b * (m- x) - b * A * t^2 -b* 2 * v * t"
+    by simp
+  also have "... = 2 * b * (m- x) - b * (A * t^2  + 2 * v * t)"
+    using \<open>2 * b * (m - x) - b * A * t\<^sup>2 - 2 * b * v * t = 2 * b * (m - x) - b * (A * t\<^sup>2 + 2 * v * t)\<close>
+    by auto 
+  also have "... = ?rhs"
+    using exp1 by simp
+  finally have "2 * b * (m - x) -2* b * A * t\<^sup>2 / 2- 2 * b * t * v = ?rhs".
+  thus "(A * t + v)^2 \<le> ?rhs"
+    using exp6 \<open>(A * t + v)\<^sup>2 = A * A * t\<^sup>2 + 2 * A * t * v + v\<^sup>2\<close> by presburger 
+qed
 
 
 lemma LICSexample5_arith1:
@@ -539,6 +549,14 @@ lemma "P \<and> P \<and> P \<Longrightarrow> P"
 
 lemma "P \<Longrightarrow> P \<Longrightarrow> P \<Longrightarrow> P"
   by blast
+
+method conjuncion uses rule =
+(intro conjI ; intro rule)
+
+lemma
+assumes hip: "P"
+shows "P \<and> P \<and> P"
+by (conjuncion rule: hip)
 
 (* (auto 0 3 intro!: teorema1 simp: teorema2 elim: teorema 3 dest: teorema 4) *)
 
