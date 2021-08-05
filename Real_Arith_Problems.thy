@@ -176,14 +176,12 @@ proof-
    also have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
     by (simp add: add_divide_distrib  diff_divide_distrib)
   also have "... =x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
-    apply clarsimp
     by (simp add: power2_eq_square)
   finally have "(x2 - B * t)\<^sup>2 / (2 * B) = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 ".
   hence "?lhs = x1 + x2\<^sup>2 / (2 * B) "
-    by (simp add:)
-  thus  "?lhs \<le> S"
-    using assms(4)
     by simp
+  thus  "?lhs \<le> S"
+    using assms(4) by simp
 qed
 
 lemma "(a:: real)*(b+c) = a* b + a* c"
@@ -253,7 +251,7 @@ proof-
   have "k * t\<^sup>2 / 2 + v * t + x + (k * t + v)\<^sup>2 / (2 * b) \<le> S"
   oops
 
-lemma "(a:: real)+ a * b = a * (1 + b) "
+lemma "(a:: real)*c+ a * b = a * (c + b)"
   by (simp add: ring_class.ring_distribs(1))
 
 lemma "(v:: real) * t + k * t\<^sup>2 / 2 = (v + k * t / 2) * t"
@@ -463,6 +461,29 @@ lemma ETCS_arith1:
     and "v\<^sup>2 / (2 * b) + (A * (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * v)/ b + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * v)) \<le> m - x" (is "?expr1 \<le> m - x")
     and guard: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> \<tau> \<le> \<epsilon>"
   shows "(A * t + v)\<^sup>2/(2 * b) \<le> (m::real) - (A * t\<^sup>2/2 + v * t + x)" (is "?lhs \<le> ?rhs")
+proof-
+ have "(A * t + v)\<^sup>2  = (A^2 * t^2 + 2 * A * t * v + v^2)"
+    by mi_metodo
+  hence "(A * t + v)\<^sup>2/ (2 * b) = (A^2 * t^2 + 2 * A * t * v + v^2) / (2 * b)"
+    by (simp add: \<open>(A * t + v)\<^sup>2 = A^2 * t\<^sup>2 + 2 * A * t * v + v\<^sup>2\<close>)
+  also have "... = A^2 * t^2 / (2 * b)+ A * t * v/ b + v^2/ (2 * b)"
+    by divide_simplify
+  also have "... = (A^2 * t\<^sup>2 / 2)/ b + (A * t * v) / b + v^2/ (2 * b)"
+    by simp
+  also have "... = (A^2 * t\<^sup>2 / 2 + A * t * v)/ b + v^2/ (2 * b)"
+    apply clarsimp
+    by (simp add: sumfrac(1))
+  also have "... = A * (A * t^2 / 2 + t * v) / b + v^2 /(2 * b)"
+    apply clarsimp using assms(1) assms(4) by (simp add: Groups.algebra_simps(18))
+  have "t \<le> \<epsilon>"
+    using assms(6) assms(4) by simp
+  hence "v *t \<le> v * \<epsilon>"  
+    using assms(3) by (simp add: mult_left_mono)
+  have "A * t^2 / 2 \<le> A * \<epsilon>^2 / 2"
+    by (simp add: \<open>t \<le> \<epsilon>\<close> assms(2) assms(4) mult_mono power_mono)
+  have "?expr1 = v\<^sup>2 / (2 * b) + (A^2 * \<epsilon>\<^sup>2 / 2 + A * \<epsilon> * v)/ b + A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * v"
+    apply clarsimp
+    sorry 
   oops
 
 lemma ETCS_Prop1_arith2:
@@ -556,7 +577,46 @@ method conjuncion uses rule =
 lemma
 assumes hip: "P"
 shows "P \<and> P \<and> P"
-by (conjuncion rule: hip)
+  by (conjuncion rule: hip)
+
+method demostracion uses rule =
+(simp add: add_divide_distrib  diff_divide_distrib; simp add: power2_eq_square)
+
+lemma STTejemplo3a_arith:
+  assumes "0 < (B::real)" "0 \<le> t" "0 \<le> x2" and key: "x1 + x2\<^sup>2 / (2 * B) \<le> S"
+  shows "x2 * t - B * t\<^sup>2 / 2 + x1 + (x2 - B * t)\<^sup>2 / (2 * B) \<le> S" (is "?lhs \<le> S")
+(* esta sería la prueba formal del lema:
+  have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
+     by mi_metodo
+  hence "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) " (is "_ = ?f")
+    by simp
+   also have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
+    by (simp add: add_divide_distrib  diff_divide_distrib)
+  also have "... =x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
+    by (simp add: power2_eq_square)
+  finally have "(x2 - B * t)\<^sup>2 / (2 * B) = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 ".
+  hence "?lhs = x1 + x2\<^sup>2 / (2 * B) "
+    by simp
+  thus  "?lhs \<le> S"
+    using assms(4) by simp
+qed
+
+pero intentaré aplicar concatenación para escribir la prueba en menos líneas
+*)
+proof-
+have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
+     by mi_metodo
+  hence "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) " (is "_ = ?f")
+    by simp
+   also have "... = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
+    by demostracion
+  finally have "(x2 - B * t)\<^sup>2 / (2 * B) = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 ".
+  hence "?lhs = x1 + x2\<^sup>2 / (2 * B) "
+    by simp
+  thus  "?lhs \<le> S"
+    using assms(4) by simp
+qed
+
 
 (* (auto 0 3 intro!: teorema1 simp: teorema2 elim: teorema 3 dest: teorema 4) *)
 
