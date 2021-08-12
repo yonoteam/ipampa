@@ -19,7 +19,7 @@ theory Real_Arith_Problems
 
 begin
 
-method mi_metodo = (simp add: power2_diff power2_sum power_mult_distrib)
+method bin_unfold = (simp add: power2_diff power2_sum power_mult_distrib)
 
 
 
@@ -40,7 +40,7 @@ lemma is_interval_real_nonneg[simp]: "is_interval {x:: real. x\<ge>0}"
 
 lemma "((a::real)-b)^2 = a^2 - 2 * a * b + b^2"
   apply (subst power2_diff[of a b])
-by mi_metodo
+by bin_unfold
 
 lemma norm_rotate_eq:
   fixes x :: "'a:: {banach,real_normed_field}"
@@ -48,7 +48,7 @@ lemma norm_rotate_eq:
     and "(x * cos t + y * sin t)\<^sup>2 + (y * cos t - x * sin t)\<^sup>2 = x\<^sup>2 + y\<^sup>2" (is "?e^2+?f^2 =_")
 proof-
   have exp1: "?a^2 = x^2 * (cos t)^2 -2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?c")
-    by mi_metodo
+    by bin_unfold
   have exp2: "?b^2 = x^2 * (sin t)^2 +2 * x * y * sin t * cos t + y^2 * (cos t)^2" (is "_=?d")
     by (simp add: power2_sum power_mult_distrib)
   have id1:  "(cos t)^2 + (sin t)^2 = 1"
@@ -68,7 +68,7 @@ next
   have exp3: "?e^2 = x^2 * (cos t)^2 +2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?g")
     by (simp add: power2_sum power_mult_distrib)
   have exp4: "?f^2 =  y^2 * (cos t)^2 -2 * x * y * sin t * cos t + x^2 * (sin t)^2  "(is "_= ?h")
-     by mi_metodo
+     by bin_unfold
 have id1:  "(cos t)^2 + (sin t)^2 = 1"
     by simp
   have "?e\<^sup>2 + ?f\<^sup>2 = ?g+?h "
@@ -170,7 +170,7 @@ lemma STTexample3a_arith:
   shows "x2 * t - B * t\<^sup>2 / 2 + x1 + (x2 - B * t)\<^sup>2 / (2 * B) \<le> S" (is "?lhs \<le> S")
 proof-
   have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
-     by mi_metodo
+     by bin_unfold
   hence "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) " (is "_ = ?f")
     by simp
    also have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
@@ -272,7 +272,7 @@ proof-
   hence des2: "1 + k / b \<le> 0"
     by simp
   have "(k * t + v)\<^sup>2  = (k^2 * t^2 + 2 * k * t * v + v^2)"
-    by mi_metodo
+    by bin_unfold
   have "(k * t + v)\<^sup>2/ (2 * b) = (k^2 * t^2 + 2 * k * t * v + v^2) / (2 * b)"
     by (simp add: \<open>(k * t + v)\<^sup>2 = k\<^sup>2 * t\<^sup>2 + 2 * k * t * v + v\<^sup>2\<close>)
   also have "... = k^2 * t^2 / (2 * b)+ k * t * v/ b + v^2/ (2 * b)"
@@ -391,7 +391,7 @@ proof-
   hence "(v - b* t)^2 \<ge> v^2 - 2*b*(m-x) "
     using \<open>0 \<le> (v - b * t)\<^sup>2\<close> by linarith
   have cuad: "(v - b* t)^2 = v^2 -2 * v * b* t + b^2 * t^2 "
-     by mi_metodo
+     by bin_unfold
   have "v^2 -2 * v * b* t + b^2 * t^2 \<ge>  v^2 - 2*b*(m-x)"
     using cuad \<open>v\<^sup>2 - 2 * b * (m - x) \<le> (v - b * t)\<^sup>2\<close> by auto
   hence " 2 * b * (m-x) - v^2 \<ge> - v\<^sup>2 + 2 * v * b* t - b^2 * t^2 "
@@ -463,7 +463,7 @@ lemma ETCS_arith1:
   shows "(A * t + v)\<^sup>2/(2 * b) \<le> (m::real) - (A * t\<^sup>2/2 + v * t + x)" (is "?lhs \<le> ?rhs")
 proof-
  have "(A * t + v)\<^sup>2  = (A^2 * t^2 + 2 * A * t * v + v^2)"
-    by mi_metodo
+    by bin_unfold
   hence "(A * t + v)\<^sup>2/ (2 * b) = (A^2 * t^2 + 2 * A * t * v + v^2) / (2 * b)"
     by (simp add: \<open>(A * t + v)\<^sup>2 = A^2 * t\<^sup>2 + 2 * A * t * v + v\<^sup>2\<close>)
   also have "... = A^2 * t^2 / (2 * b)+ A * t * v/ b + v^2/ (2 * b)"
@@ -499,7 +499,7 @@ proof-
   hence d1: "m - x - v^2 /(2* b) \<le> v * t - b * t\<^sup>2 / 2 - v^2 /(2* b)"
     by simp
   have " - (v - b * t)\<^sup>2 = - (v^2 - 2 * v * b * t + b^2 * t^2)"
-    by mi_metodo
+    by bin_unfold
   hence "- (v - b * t)\<^sup>2/(2* b) = - (v^2 - 2 * v * b * t + b^2 * t^2) /(2* b)"
     by simp
   also have "... = - (v^2 /(2* b) - 2 * v * b * t /(2* b) + b^2 * t^2 /(2* b))"
@@ -579,15 +579,16 @@ assumes hip: "P"
 shows "P \<and> P \<and> P"
   by (conjuncion rule: hip)
 
-method demostracion uses rule =
+method divide_distrib uses rule =
 (simp add: add_divide_distrib  diff_divide_distrib; simp add: power2_eq_square)
 
 lemma STTejemplo3a_arith:
   assumes "0 < (B::real)" "0 \<le> t" "0 \<le> x2" and key: "x1 + x2\<^sup>2 / (2 * B) \<le> S"
   shows "x2 * t - B * t\<^sup>2 / 2 + x1 + (x2 - B * t)\<^sup>2 / (2 * B) \<le> S" (is "?lhs \<le> S")
+  apply (bin_unfold, divide_distrib) using assms by (auto simp: power2_eq_square)
 (* esta sería la prueba formal del lema:
   have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
-     by mi_metodo
+     by bin_unfold
   hence "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) " (is "_ = ?f")
     by simp
    also have "... = x2^2 /(2 * B)- 2 * B * x2* t/(2 * B) + B^2* t^2 /(2 * B) "
@@ -602,23 +603,69 @@ lemma STTejemplo3a_arith:
 qed
 
 pero intentaré aplicar concatenación para escribir la prueba en menos líneas
-*)
+
 proof-
 have "(x2 - B * t)\<^sup>2 =  x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2 "
-     by mi_metodo
-  hence "(x2 - B * t)\<^sup>2 / (2 * B) =(x2\<^sup>2 -2 * B * x2 * t + B^2 * t\<^sup>2) / (2 * B) " (is "_ = ?f")
-    by simp
-   also have "... = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
-    by demostracion
-  finally have "(x2 - B * t)\<^sup>2 / (2 * B) = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 ".
+     by bin_unfold
+  hence "(x2 - B * t)\<^sup>2 / (2 * B) = x2^2 /(2 * B) - x2 * t + B* t^2/ 2 " using assms
+    by divide_distrib
   hence "?lhs = x1 + x2\<^sup>2 / (2 * B) "
     by simp
   thus  "?lhs \<le> S"
     using assms(4) by simp
 qed
-
+*)
 
 (* (auto 0 3 intro!: teorema1 simp: teorema2 elim: teorema 3 dest: teorema 4) *)
+
+
+lemma assumes "(x:: real) \<noteq>  y"
+  shows "(x^2 - y^2)/ (x - y) = x + y" (is "?l =_")
+proof-
+  have "x^2 - y^2 = (x + y)*(x - y)"
+    by (simp add: power2_eq_square square_diff_square_factored)
+  hence "?l = (x + y)*(x - y)/(x-y)"
+    by simp
+  also have "... = x+y"
+    by (simp add: assms)
+  thus "?l= x+ y"
+    by (simp add: calculation)
+qed
+
+lemma "(x :: real) * y = ((x + y)^2 - (x - y)^2) / 4"
+  by bin_unfold
+
+lemma assumes "(x:: real)^2 - 10 * x + 25 = 0"
+  shows "x = 5"
+proof-
+  have "(x:: real)^2 - 10 * x + 25 = (x - 5)^2"
+    by bin_unfold
+ hence "(x - 5)^2 = 0"
+    using assms by simp
+  thus "x = 5" by simp
+qed
+
+lemma domain: assumes "(x:: real) * y = 0"
+  shows "x = 0 | y = 0"
+  apply (rule divisors_zero) using assms.
+
+(*lemma domain1: assumes "(x::real) * (x - 2) = 0"
+  shows "x = 0 | x = 2"
+proof-
+  show "x = 0 | x = 2" using assms domain by simp
+qed
+*)
+
+lemma assumes "(x:: real)^2 - 2 * x = 0"
+  shows "x = 0 | x = 2"
+proof-
+  have "x^2 - 2 * x = x * (x - 2)"
+    by (simp add: Groups.algebra_simps(19) power2_eq_square)
+  thus  "x = 0 | x = 2" 
+    using assms domain by simp
+qed
+
+
 
 
 
