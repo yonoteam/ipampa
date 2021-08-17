@@ -89,9 +89,6 @@ qed
 lemma mult_abs_right_mono: "a < b \<Longrightarrow> a * \<bar>c\<bar> \<le> b * \<bar>c\<bar>" for c::real
   by (simp add: mult_right_mono)
 
-lemma "(a:: real)* a^n = a^(Suc n)"
-  by (rule semiring_normalization_rules(27))
-
 lemma dyn_cons_qty_arith: "(36::real) * (x1\<^sup>2 * (x1 * x2 ^ 3)) - 
   (- (24 * (x1\<^sup>2 * x2) * x1 ^ 3 * (x2)\<^sup>2) - 12 * (x1\<^sup>2 * x2) * x1 * x2 ^ 4) - 
   36 * (x1\<^sup>2 * (x2 * x1)) * (x2)\<^sup>2 - 12 * (x1\<^sup>2 * (x1 * x2 ^ 5)) = 24 * (x1 ^ 5 * x2 ^ 3)" 
@@ -640,9 +637,7 @@ lemma assumes "(x:: real)^2 - 10 * x + 25 = 0"
 proof-
   have "(x:: real)^2 - 10 * x + 25 = (x - 5)^2"
     by bin_unfold
- hence "(x - 5)^2 = 0"
-    using assms by simp
-  thus "x = 5" by simp
+ thus "x = 5" using assms by simp
 qed
 
 lemma domain: assumes "(x:: real) * y = 0"
@@ -665,7 +660,54 @@ proof-
     using assms domain by simp
 qed
 
+(*
+Intentare encontrar una tactica para simplificar cualquier monomio
+*)
+lemma "(a:: real) * (b* c) = (a * b) *c"
+  apply (rule semiring_normalization_rules(18)).
 
+lemma "(a:: real)* a^n = a^(Suc n)"
+  by (rule semiring_normalization_rules(27))
+
+lemma "(a:: real) * b = b * a"
+  apply (rule cross3_simps(11)).
+
+method mon_simp = (rule semiring_normalization_rules; 
+rule cross3_simps; simp add: power2_eq_square)+
+
+lemma "(x:: real) * y * z = x * z * y"
+  by mon_simp
+
+lemma "(a:: real) * a * b = a^2 * b"
+  by mon_simp
+
+
+(*
+Aqui desarrollare una tactica para encontrar el comun denominador entre dos fracciones
+*)
+lemma  assumes "b \<noteq> 0" and "d \<noteq> 0"
+  shows "(a:: real) / b + c / d = (a * d + b * c) / (b * d)"
+  by (simp add: add_frac_eq assms(1) assms(2))
+
+lemma  assumes "b \<noteq> 0" and "d \<noteq> 0"
+  shows "(a:: real) / b - c / d = (a * d - b * c) / (b * d)"
+ by (simp add: diff_frac_eq assms(1) assms(2))
+
+method frac_ad = (simp add: add_frac_eq  diff_frac_eq)
+
+lemma "(1:: real) / 2 + 1 / 3 = 5 / 6"
+  by frac_ad
+
+lemma "(x:: real) / 2 + y / 6 = (3 * x + y) / 6"
+  by frac_ad
+
+lemma assumes "(k:: real) > 1"
+  shows "1 / k + 1 / (1 - k) = 1 / (k * (1 - k))"
+  using assms apply frac_ad.
+
+lemma assumes "(k:: real) > 0"
+  shows "1 / k - 1 / (k+1) = 1 / (k * (k + 1))"
+ using assms apply frac_ad.
 
 
 
