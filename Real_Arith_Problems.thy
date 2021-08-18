@@ -672,6 +672,12 @@ lemma "(a:: real)* a^n = a^(Suc n)"
 lemma "(a:: real) * b = b * a"
   apply (rule cross3_simps(11)).
 
+named_theorems monomio_rules "lista de propiedes para simplificar monomios"
+
+declare semiring_normalization_rules(29) [monomio_rules]
+    and semiring_normalization_rules(28) [monomio_rules]
+
+
 method mon_simp = (rule semiring_normalization_rules | rule semiring_norm |
 rule cross3_simps | simp add: power2_eq_square power3_eq_cube ; simp)+
 
