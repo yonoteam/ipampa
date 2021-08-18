@@ -672,8 +672,8 @@ lemma "(a:: real)* a^n = a^(Suc n)"
 lemma "(a:: real) * b = b * a"
   apply (rule cross3_simps(11)).
 
-method mon_simp = (rule semiring_normalization_rules; 
-rule cross3_simps; simp add: power2_eq_square)+
+method mon_simp = (rule semiring_normalization_rules | rule semiring_norm |
+rule cross3_simps | simp add: power2_eq_square power3_eq_cube ; simp)+
 
 lemma "(x:: real) * y * z = x * z * y"
   by mon_simp
@@ -681,6 +681,17 @@ lemma "(x:: real) * y * z = x * z * y"
 lemma "(a:: real) * a * b = a^2 * b"
   by mon_simp
 
+lemma "(x:: real)^3 * y * x^2 * x = y * x^6"
+proof-
+  have "x^3 * y * x^2 * x =  x^3 * y * x^3"
+    by mon_simp
+  also have "... = y * x^6"
+    by simp
+  finally show ?thesis by simp
+qed
+
+lemma "(a:: real) * a^5 = a^6"
+  oops
 
 (*
 Aqui desarrollare una tactica para encontrar el comun denominador entre dos fracciones
@@ -705,8 +716,8 @@ lemma assumes "(k:: real) > 1"
   shows "1 / k + 1 / (1 - k) = 1 / (k * (1 - k))"
   using assms apply frac_ad.
 
-lemma assumes "(k:: real) > 0"
-  shows "1 / k - 1 / (k+1) = 1 / (k * (k + 1))"
+lemma assumes "(k:: real) > 0" and "1 / (k * (k + 1)) \<le> S"
+  shows "1 / k - 1 / (k+1) \<le> S"
  using assms apply frac_ad.
 
 
