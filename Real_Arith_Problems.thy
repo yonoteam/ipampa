@@ -670,10 +670,17 @@ lemma "(a:: real)* a^n = a^(Suc n)"
   by (rule semiring_normalization_rules(27))
 
 lemma "(a:: real) * b = b * a"
-  apply (rule cross3_simps(11)).
+  apply (rule cross3_simps(11))
+  done
 
-method mon_simp = (rule semiring_normalization_rules | rule semiring_norm |
-rule cross3_simps | simp add: power2_eq_square power3_eq_cube ; simp)+
+named_theorems monomial_rules "lista de propiedes para simplificar monomios"
+
+declare semiring_normalization_rules(29) [monomial_rules]
+    and semiring_normalization_rules(28) [monomial_rules]
+    and cross3_simps(11) [monomial_rules]
+    and power2_eq_square power3_eq_cube power_commutes [monomial_rules]
+
+method mon_simp = (simp add: monomial_rules)+
 
 lemma "(x:: real) * y * z = x * z * y"
   by mon_simp
@@ -682,6 +689,7 @@ lemma "(a:: real) * a * b = a^2 * b"
   by mon_simp
 
 lemma "(x:: real)^3 * y * x^2 * x = y * x^6"
+  apply mon_simp
 proof-
   have "x^3 * y * x^2 * x =  x^3 * y * x^3"
     by mon_simp
@@ -691,7 +699,10 @@ proof-
 qed
 
 lemma "(a:: real) * a^5 = a^6"
-  oops
+  by (metis (mono_tags, lifting) power2_eq_square power3_eq_cube power_add_numeral 
+power_add_numeral2 power_commutes semiring_norm(10) semiring_norm(2) semiring_norm(5) 
+semiring_norm(9))
+  
 
 (*
 Aqui desarrollare una tactica para encontrar el comun denominador entre dos fracciones
@@ -714,11 +725,11 @@ lemma "(x:: real) / 2 + y / 6 = (3 * x + y) / 6"
 
 lemma assumes "(k:: real) > 1"
   shows "1 / k + 1 / (1 - k) = 1 / (k * (1 - k))"
-  using assms apply frac_ad.
+  using assms by frac_ad
 
 lemma assumes "(k:: real) > 0" and "1 / (k * (k + 1)) \<le> S"
   shows "1 / k - 1 / (k+1) \<le> S"
- using assms apply frac_ad.
+ using assms by frac_ad
 
 
 
