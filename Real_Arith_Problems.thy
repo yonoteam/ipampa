@@ -675,12 +675,23 @@ lemma "(a:: real) * b = b * a"
 
 named_theorems monomial_rules "lista de propiedes para simplificar monomios"
 
+<<<<<<< HEAD
 declare semiring_normalization_rules(29) [monomial_rules]
     and semiring_normalization_rules(28) [monomial_rules]
     and cross3_simps(11) [monomial_rules]
     and power2_eq_square power3_eq_cube power_commutes [monomial_rules]
 
 method mon_simp = (simp add: monomial_rules)+
+=======
+named_theorems monomio_rules "lista de propiedes para simplificar monomios"
+
+declare semiring_normalization_rules(29) [monomio_rules]
+    and semiring_normalization_rules(28) [monomio_rules]
+
+
+method mon_simp = (rule semiring_normalization_rules | rule semiring_norm |
+rule cross3_simps | simp add: power2_eq_square power3_eq_cube ; simp)+
+>>>>>>> c34a98c23766d5e47f8708b0626d84fe79aaec67
 
 lemma "(x:: real) * y * z = x * z * y"
   by mon_simp
