@@ -21,6 +21,17 @@ begin
 
 method bin_unfold = (simp add: power2_diff power2_sum power_mult_distrib)
 
+named_theorems monomial_rules "lista de propiedes para simplificar monomios"
+
+declare power2_eq_square power3_eq_cube [monomial_rules] 
+    and cross3_simps(11) [monomial_rules]
+
+named_theorems mono_rules "otra lista para simplificar monomios"
+
+declare semiring_normalization_rules(29) [mono_rules]
+    and semiring_normalization_rules(28) [mono_rules]
+
+method mon_simp = (simp add: monomial_rules | simp add: mono_rules)+
 
 
 subsection \<open> Basic \<close>
@@ -673,26 +684,6 @@ lemma "(a:: real) * b = b * a"
   apply (rule cross3_simps(11))
   done
 
-named_theorems monomial_rules "lista de propiedes para simplificar monomios"
-
-<<<<<<< HEAD
-declare semiring_normalization_rules(29) [monomial_rules]
-    and semiring_normalization_rules(28) [monomial_rules]
-    and cross3_simps(11) [monomial_rules]
-    and power2_eq_square power3_eq_cube power_commutes [monomial_rules]
-
-method mon_simp = (simp add: monomial_rules)+
-=======
-named_theorems monomio_rules "lista de propiedes para simplificar monomios"
-
-declare semiring_normalization_rules(29) [monomio_rules]
-    and semiring_normalization_rules(28) [monomio_rules]
-
-
-method mon_simp = (rule semiring_normalization_rules | rule semiring_norm |
-rule cross3_simps | simp add: power2_eq_square power3_eq_cube ; simp)+
->>>>>>> c34a98c23766d5e47f8708b0626d84fe79aaec67
-
 lemma "(x:: real) * y * z = x * z * y"
   by mon_simp
 
@@ -701,19 +692,23 @@ lemma "(a:: real) * a * b = a^2 * b"
 
 lemma "(x:: real)^3 * y * x^2 * x = y * x^6"
   apply mon_simp
+  by (metis (no_types, hide_lams) num_double numeral_times_numeral power2_eq_square
+ power3_eq_cube power_mult vector_space_over_itself.scale_scale)
+(*
 proof-
   have "x^3 * y * x^2 * x =  x^3 * y * x^3"
     by mon_simp
   also have "... = y * x^6"
     by simp
-  finally show ?thesis by simp
-qed
+  finally have "x^3 * y * x^2 * x = y * x^6 "
+    by simp
+  oops
+*)
 
 lemma "(a:: real) * a^5 = a^6"
-  by (metis (mono_tags, lifting) power2_eq_square power3_eq_cube power_add_numeral 
-power_add_numeral2 power_commutes semiring_norm(10) semiring_norm(2) semiring_norm(5) 
-semiring_norm(9))
-  
+  by (metis (mono_tags, lifting) power2_eq_square power3_eq_cube power_add_numeral
+ power_add_numeral2 power_commutes semiring_norm(10) semiring_norm(2) semiring_norm(5)
+ semiring_norm(9))
 
 (*
 Aqui desarrollare una tactica para encontrar el comun denominador entre dos fracciones
