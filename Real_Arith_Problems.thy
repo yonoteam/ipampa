@@ -23,15 +23,21 @@ method bin_unfold = (simp add: power2_diff power2_sum power_mult_distrib)
 
 named_theorems monomial_rules "lista de propiedes para simplificar monomios"
 
-declare power2_eq_square power3_eq_cube [monomial_rules] 
-    and cross3_simps(11) [monomial_rules]
+declare  semiring_normalization_rules(29) [monomial_rules]
+    and semiring_normalization_rules(28) [monomial_rules]
+    and semiring_normalization_rules(27) [monomial_rules]
+    and semiring_normalization_rules(18) [monomial_rules]
+ 
+thm semiring_normalization_rules(27)
+
+thm cross3_simps(11) semiring_normalization_rules(27,28,29)
 
 named_theorems mono_rules "otra lista para simplificar monomios"
 
 declare semiring_normalization_rules(29) [mono_rules]
     and semiring_normalization_rules(28) [mono_rules]
 
-method mon_simp = (simp add: monomial_rules | simp add: mono_rules)+
+method mon_simp = (simp add: monomial_rules)+
 
 
 subsection \<open> Basic \<close>
@@ -691,24 +697,23 @@ lemma "(a:: real) * a * b = a^2 * b"
   by mon_simp
 
 lemma "(x:: real)^3 * y * x^2 * x = y * x^6"
-  apply mon_simp
-  by (metis (no_types, hide_lams) num_double numeral_times_numeral power2_eq_square
- power3_eq_cube power_mult vector_space_over_itself.scale_scale)
-(*
-proof-
-  have "x^3 * y * x^2 * x =  x^3 * y * x^3"
-    by mon_simp
-  also have "... = y * x^6"
-    by simp
-  finally have "x^3 * y * x^2 * x = y * x^6 "
-    by simp
-  oops
-*)
+  by mon_simp
 
 lemma "(a:: real) * a^5 = a^6"
-  by (metis (mono_tags, lifting) power2_eq_square power3_eq_cube power_add_numeral
- power_add_numeral2 power_commutes semiring_norm(10) semiring_norm(2) semiring_norm(5)
- semiring_norm(9))
+  by mon_simp
+
+lemma "(x:: real)^2 * z^2 * y * z * x = x^3 * y * z^3"
+  apply mon_simp
+(*
+  apply (simp add: mult.assoc[symmetric])
+  apply mon_simp
+  apply (simp add: cross3_simps(11) [of  "x^2" "z^2"])
+  apply mon_simp
+  oops
+  apply mon_simp
+  apply (simp add: mult.assoc[symmetric])
+  apply mon_simp
+*)
 
 (*
 Aqui desarrollare una tactica para encontrar el comun denominador entre dos fracciones
@@ -737,7 +742,11 @@ lemma assumes "(k:: real) > 0" and "1 / (k * (k + 1)) \<le> S"
   shows "1 / k - 1 / (k+1) \<le> S"
  using assms by frac_ad
 
-
+(* Buscare una tactica para reagrupar variables  *)
+lemma "(x:: real) * y * x * y * x = x^3 * y^2"
+  oops
+ 
+ 
 
 
 
