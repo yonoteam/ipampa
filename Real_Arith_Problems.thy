@@ -488,7 +488,8 @@ proof-
     apply clarsimp
     by (simp add: sumfrac(1))
   also have "... = A * (A * t^2 / 2 + t * v) / b + v^2 /(2 * b)"
-    apply clarsimp using assms(1) assms(4) by (simp add: Groups.algebra_simps(18))
+    apply clarsimp using assms(1) assms(4) 
+    by (simp add: Groups.algebra_simps(18) power2_eq_square)
   have "t \<le> \<epsilon>"
     using assms(6) assms(4) by simp
   hence "v *t \<le> v * \<epsilon>"  
@@ -704,6 +705,10 @@ lemma "(a:: real) * a^5 = a^6"
 
 lemma "(x:: real)^2 * z^2 * y * z * x = x^3 * y * z^3"
   apply mon_simp
+  done
+
+thm monomial_rules
+
 (*
   apply (simp add: mult.assoc[symmetric])
   apply mon_simp
@@ -742,12 +747,26 @@ lemma assumes "(k:: real) > 0" and "1 / (k * (k + 1)) \<le> S"
   shows "1 / k - 1 / (k+1) \<le> S"
  using assms by frac_ad
 
+
+thm algebra_simps(5)
+            
+lemma "a * b = b * a" for a :: real
+  apply (subst cross3_simps(11)[where b=b])
+  apply (rule refl)
+  done
+
+lemma "a * b * c = c * a * b" for a::real
+  apply (subst cross3_simps(11)[where b=c])+
+  apply (subst mult.assoc)+
+  apply (rule refl)
+  done
+
 (* Buscare una tactica para reagrupar variables  *)
 lemma "(x:: real) * y * x * y * x = x^3 * y^2"
-  oops
- 
- 
-
+  apply (subst cross3_simps(11)[where b=x])+
+  apply (subst mult.assoc)+
+  apply mon_simp
+  done
 
 
 subsection \<open> Advanced \<close>
