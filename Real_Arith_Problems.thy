@@ -37,7 +37,16 @@ named_theorems mono_rules "otra lista para simplificar monomios"
 declare semiring_normalization_rules(29) [mono_rules]
     and semiring_normalization_rules(28) [mono_rules]
 
-method mon_simp = (simp add: monomial_rules)+
+(* Buscare una tactica para reagrupar variables
+lemma "(x:: real) * y * x * y * x = x^3 * y^2"
+  apply (subst cross3_simps(11)[where b=x])+
+ apply (subst mult.assoc)+ 
+  apply mon_simp
+  done
+*)
+method power_simp = ((subst cross3_simps(11))+; (subst mult.assoc)+)
+
+method mon_simp = (simp add: monomial_rules, (power_simp)?)+
 
 
 subsection \<open> Basic \<close>
@@ -764,9 +773,11 @@ lemma "a * b * c = c * a * b" for a::real
 (* Buscare una tactica para reagrupar variables  *)
 lemma "(x:: real) * y * x * y * x = x^3 * y^2"
   apply (subst cross3_simps(11)[where b=x])+
-  apply (subst mult.assoc)+
+ apply (subst mult.assoc)+ 
   apply mon_simp
   done
+
+thm cross3_simps(11)
 
 
 subsection \<open> Advanced \<close>
