@@ -44,7 +44,8 @@ lemma "(x:: real) * y * x * y * x = x^3 * y^2"
   apply mon_simp
   done
 *)
-method power_simp = ((subst cross3_simps(11))+; (subst mult.assoc)+)
+method power_simp = (((subst cross3_simps(11)[where b="x^_"])+)?; 
+((subst cross3_simps(11)[where b="x"])+)?; (subst mult.assoc)+; (rule refl)?)
 
 method mon_simp = (simp add: monomial_rules, (power_simp)?)+
 
@@ -760,24 +761,51 @@ lemma assumes "(k:: real) > 0" and "1 / (k * (k + 1)) \<le> S"
 thm algebra_simps(5)
             
 lemma "a * b = b * a" for a :: real
+  apply mon_simp
+  done
+(*
   apply (subst cross3_simps(11)[where b=b])
   apply (rule refl)
   done
+*)
 
 lemma "a * b * c = c * a * b" for a::real
+  apply mon_simp
+  done
+(*
   apply (subst cross3_simps(11)[where b=c])+
   apply (subst mult.assoc)+
   apply (rule refl)
   done
+*)
 
 (* Buscare una tactica para reagrupar variables  *)
+
 lemma "(x:: real) * y * x * y * x = x^3 * y^2"
+  apply power_simp
+  apply mon_simp
+  done
+(*
   apply (subst cross3_simps(11)[where b=x])+
- apply (subst mult.assoc)+ 
   apply mon_simp
   done
 
-thm cross3_simps(11)
+ apply (subst mult.assoc)+ 
+  apply mon_simp
+  done
+*)
+
+lemma "(x:: real) * y^2 * x^2 * y * x = x^4 * y^3"
+  apply power_simp
+  apply mon_simp
+  done
+(*
+  apply (subst cross3_simps(11)[where b="x^_"])+
+ apply (subst cross3_simps(11)[where b="x"])+
+  apply mon_simp
+  done
+ *)
+
 
 
 subsection \<open> Advanced \<close>
