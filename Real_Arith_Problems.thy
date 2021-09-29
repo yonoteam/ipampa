@@ -44,10 +44,22 @@ lemma "(x:: real) * y * x * y * x = x^3 * y^2"
   apply mon_simp
   done
 *)
-method power_simp  = (((subst mult.commute[where b="x^_"])+)?; 
-((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+; (rule refl)?)
 
-method mon_simp  = ((power_simp)?; simp add: monomial_rules)+
+method move_left for x::"'a::{ab_semigroup_mult,power}" = (((subst mult.commute[where b="x^_"])+)?; 
+    ((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+) (* \<checkmark> *)
+
+method mon_simp  = (simp add: monomial_rules) (* \<checkmark> *)
+
+method move_right for x::"'a::{ab_semigroup_mult,power}" = (((subst mult.commute[where a=x])+, 
+      (subst mult.assoc)+)+) (* TODO? *)
+
+thm add.assoc add.commute
+
+method power_simp for x::"'a::{ab_semigroup_mult,power}"  = (move_left x, mon_simp)
+
+(*(((subst mult.commute[where b="x^_"])+)?;
+((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+; (rule refl)?)*) (* TODO *)
+
 
 thm cross3_simps(11)
 thm mult.commute
@@ -784,8 +796,7 @@ lemma "a * b * c = c * a * b" for a::real
 (* Buscare una tactica para reagrupar variables  *)
 
 lemma "(x:: real) * y * x * y * x = x^3 * y^2"
-  apply mon_simp
-  done
+  by (power_simp y)
 (*
   apply (subst cross3_simps(11)[where b=x])+
   apply mon_simp
@@ -797,8 +808,8 @@ lemma "(x:: real) * y * x * y * x = x^3 * y^2"
 *)
 
 lemma "(x:: real) * y^2 * x^2 * y * x = x^4 * y^3"
-  apply mon_simp
-  done
+  by (power_simp y)
+
 (*
   apply (subst cross3_simps(11)[where b="x^_"])+
  apply (subst cross3_simps(11)[where b="x"])+
@@ -807,10 +818,33 @@ lemma "(x:: real) * y^2 * x^2 * y * x = x^4 * y^3"
  *)
 
 lemma "(x:: real) * y * x * y^2 * x^3 * x = x^6 * y^3"
-  apply mon_simp
+  by (power_simp y)
+
+lemma "(((((x:: real) * y) * z) * x^2) * y) * z^2 = x^3 * y^2 * z^3"
+  by (power_simp x, power_simp y)
+
+  apply (move_left x, mon_simp)
+  apply (move_left z, mon_simp)
   done
 
-lemma "(x:: real) * y * z * x^2 * y * z^2 = x^3 * y^2 * z^3"
+lemma "a * b * z * w = b * z * w * a" for a::real
+  apply(subst mult.commute[where a=a])+
+  apply(subst mult.assoc)+
+  apply(subst mult.commute[where a=a])+
+  apply(subst mult.assoc)+
+  apply simp
+  done
+
+lemma "a * b * z * w = b * z * w * a" for a::real
+  apply (move_right a)
+  apply ((subst mult.commute[where a=a])+, (subst mult.assoc)+)+
+  apply simp
+  done
+
+ apply (subst cross3_simps(11)[where b="y^_"])
+
+  apply (move_right z)
+
   apply power_simp
   apply power_simp
  apply (subst cross3_simps(11)[where b="y^_"])+
