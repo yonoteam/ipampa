@@ -44,11 +44,13 @@ lemma "(x:: real) * y * x * y * x = x^3 * y^2"
   apply mon_simp
   done
 *)
-method power_simp = (((subst cross3_simps(11)[where b="x^_"])+)?; 
-((subst cross3_simps(11)[where b="x"])+)?; (subst mult.assoc)+; (rule refl)?)
+method power_simp  = (((subst mult.commute[where b="x^_"])+)?; 
+((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+; (rule refl)?)
 
-method mon_simp = ((power_simp)?; simp add: monomial_rules)+
+method mon_simp  = ((power_simp)?; simp add: monomial_rules)+
 
+thm cross3_simps(11)
+thm mult.commute
 
 subsection \<open> Basic \<close>
 
@@ -810,6 +812,11 @@ lemma "(x:: real) * y * x * y^2 * x^3 * x = x^6 * y^3"
 
 lemma "(x:: real) * y * z * x^2 * y * z^2 = x^3 * y^2 * z^3"
   apply power_simp
+  apply power_simp
+ apply (subst cross3_simps(11)[where b="y^_"])+
+  apply (subst cross3_simps(11)[where b="y"])+
+  oops
+  apply mon_simp
 
 
 
