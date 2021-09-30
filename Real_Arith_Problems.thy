@@ -50,8 +50,8 @@ method move_left for x::"'a::{ab_semigroup_mult,power}" = (((subst mult.commute[
 
 method mon_simp  = (simp add: monomial_rules) (* \<checkmark> *)
 
-method move_right for x::"'a::{ab_semigroup_mult,power}" = (((subst mult.commute[where a=x])+, 
-      (subst mult.assoc)+)+) (* TODO? *)
+method move_right for x::"'a::{ab_semigroup_mult,power}" = (((subst mult.commute[where a="x^_"])+)?; 
+    ((subst mult.commute[where a="x"])+)?; (subst mult.assoc)+)+ (* TODO? *)
 
 thm add.assoc add.commute
 
@@ -837,6 +837,8 @@ lemma "a * b * z * w = b * z * w * a" for a::real
 
 lemma "a * b * z * w = b * z * w * a" for a::real
   apply (move_right a)
+  apply (rule refl)
+  done
   apply ((subst mult.commute[where a=a])+, (subst mult.assoc)+)+
   apply simp
   done
