@@ -19,7 +19,7 @@ theory Real_Arith_Problems
 
 begin
 
-method bin_unfold = (simp add: power2_diff power2_sum power_mult_distrib)
+
 
 named_theorems monomial_rules "lista de propiedes para simplificar monomios"
 
@@ -27,42 +27,40 @@ declare  semiring_normalization_rules(29) [monomial_rules]
     and semiring_normalization_rules(28) [monomial_rules]
     and semiring_normalization_rules(27) [monomial_rules]
     and semiring_normalization_rules(18) [monomial_rules]
- 
-thm semiring_normalization_rules(27)
-
-thm cross3_simps(11) semiring_normalization_rules(27,28,29)
 
 named_theorems mono_rules "otra lista para simplificar monomios"
 
 declare semiring_normalization_rules(29) [mono_rules]
     and semiring_normalization_rules(28) [mono_rules]
 
-(* Buscare una tactica para reagrupar variables
-lemma "(x:: real) * y * x * y * x = x^3 * y^2"
-  apply (subst cross3_simps(11)[where b=x])+
- apply (subst mult.assoc)+ 
-  apply mon_simp
-  done
-*)
+(* He aqui una lista de tacticas utiles para futuras demostraciones *)
 
-method move_left for x::"'a::{ab_semigroup_mult,power}" = (((subst mult.commute[where b="x^_"])+)?; 
-    ((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+) (* \<checkmark> *)
+(*1*) method bin_unfold = (simp add: power2_diff power2_sum power_mult_distrib)
+(*Este metodo permite expandir un binomio al cuadrado*)
 
-method mon_simp  = (simp add: monomial_rules) (* \<checkmark> *)
+(*2*) method move_left for x::"'a::{ab_semigroup_mult,power}" =
+ (((subst mult.commute[where b="x^_"])+)?; 
+    ((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+, (rule refl)?)
+ (*Este metodo permite mover una variable a la izquierda*)
 
-method move_right for x::"'a::{ab_semigroup_mult,power}" = (((subst mult.commute[where a="x^_"])+)?; 
-    ((subst mult.commute[where a="x"])+)?; (subst mult.assoc)+)+ (* TODO? *)
+(*3*) method mon_simp  = (simp add: monomial_rules) 
+(*Este metodo permite simplificar monomios de forma exhaustiva*)
 
-thm add.assoc add.commute
+(*4*) method move_right for x::"'a::{ab_semigroup_mult,power}" = 
+((subst mult.commute[where a="x^_"])+)?; 
+    ((subst mult.commute[where a="x"])+)?; ((subst mult.assoc)+)?, (rule refl)?
+(*Este metodo permite mover una variable a la derecha*)
 
-method power_simp for x::"'a::{ab_semigroup_mult,power}"  = (move_left x, mon_simp)
+(*5*) method frac_ad = (simp add: add_frac_eq  diff_frac_eq)
+(*Este metodo permite distribuir el denominador de una fraccion respecto a la suma o resta*)
 
-(*(((subst mult.commute[where b="x^_"])+)?;
-((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+; (rule refl)?)*) (* TODO *)
+(*6*) method power_simp for x::"'a::{ab_semigroup_mult,power}"  = (move_left x, mon_simp)
+(*Este metodo permite mover una variable a la izquierda y simplificar los exponentes*)
+
+(*7*) method simp_power for x::"'a::{ab_semigroup_mult,power}"  = (move_right x, mon_simp)
+(*Este metodo permite mover una variable a la derecha y simplificar los exponentes*)
 
 
-thm cross3_simps(11)
-thm mult.commute
 
 subsection \<open> Basic \<close>
 
@@ -80,7 +78,7 @@ lemma is_interval_real_nonneg[simp]: "is_interval {x:: real. x\<ge>0}"
   using is_interval_1 by force 
 
 lemma "((a::real)-b)^2 = a^2 - 2 * a * b + b^2"
-  apply (subst power2_diff[of a b])
+  (*apply (subst power2_diff[of a b])*)
 by bin_unfold
 
 lemma norm_rotate_eq:
@@ -730,9 +728,6 @@ lemma "(a:: real) * a^5 = a^6"
 lemma "(x:: real)^2 * z^2 * y * z * x = x^3 * y * z^3"
   apply mon_simp
   done
-
-thm monomial_rules
-
 (*
   apply (simp add: mult.assoc[symmetric])
   apply mon_simp
@@ -755,7 +750,6 @@ lemma  assumes "b \<noteq> 0" and "d \<noteq> 0"
   shows "(a:: real) / b - c / d = (a * d - b * c) / (b * d)"
  by (simp add: diff_frac_eq assms(1) assms(2))
 
-method frac_ad = (simp add: add_frac_eq  diff_frac_eq)
 
 lemma "(1:: real) / 2 + 1 / 3 = 5 / 6"
   by frac_ad
@@ -809,7 +803,6 @@ lemma "(x:: real) * y * x * y * x = x^3 * y^2"
 
 lemma "(x:: real) * y^2 * x^2 * y * x = x^4 * y^3"
   by (power_simp y)
-
 (*
   apply (subst cross3_simps(11)[where b="x^_"])+
  apply (subst cross3_simps(11)[where b="x"])+
@@ -823,36 +816,10 @@ lemma "(x:: real) * y * x * y^2 * x^3 * x = x^6 * y^3"
 lemma "(((((x:: real) * y) * z) * x^2) * y) * z^2 = x^3 * y^2 * z^3"
   by (power_simp x, power_simp y)
 
-  apply (move_left x, mon_simp)
-  apply (move_left z, mon_simp)
-  done
-
-lemma "a * b * z * w = b * z * w * a" for a::real
-  apply(subst mult.commute[where a=a])+
-  apply(subst mult.assoc)+
-  apply(subst mult.commute[where a=a])+
-  apply(subst mult.assoc)+
-  apply simp
-  done
 
 lemma "a * b * z * w = b * z * w * a" for a::real
   apply (move_right a)
-  apply (rule refl)
   done
-  apply ((subst mult.commute[where a=a])+, (subst mult.assoc)+)+
-  apply simp
-  done
-
- apply (subst cross3_simps(11)[where b="y^_"])
-
-  apply (move_right z)
-
-  apply power_simp
-  apply power_simp
- apply (subst cross3_simps(11)[where b="y^_"])+
-  apply (subst cross3_simps(11)[where b="y"])+
-  oops
-  apply mon_simp
 
 
 
