@@ -40,15 +40,15 @@ declare semiring_normalization_rules(29) [mono_rules]
 
 (*2*) method move_left for x::"'a::{ab_semigroup_mult,power}" =
  (((subst mult.commute[where b="x^_"])+)?; 
-    ((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+, (rule refl)?)
+    ((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+)+, (rule refl)?
  (*Este metodo permite mover una variable a la izquierda*)
 
 (*3*) method mon_simp  = (simp add: monomial_rules) 
 (*Este metodo permite simplificar monomios de forma exhaustiva*)
 
 (*4*) method move_right for x::"'a::{ab_semigroup_mult,power}" = 
-((subst mult.commute[where a="x^_"])+)?; 
-    ((subst mult.commute[where a="x"])+)?; ((subst mult.assoc)+)?, (rule refl)?
+(((subst mult.commute[where a="x^_"])+)?; 
+    ((subst mult.commute[where a="x"])+)?; ((subst mult.assoc)+)?, (rule refl)?)+
 (*Este metodo permite mover una variable a la derecha*)
 
 (*5*) method frac_ad = (simp add: add_frac_eq  diff_frac_eq)
@@ -57,7 +57,7 @@ declare semiring_normalization_rules(29) [mono_rules]
 (*6*) method power_simp for x::"'a::{ab_semigroup_mult,power}"  = (move_left x, mon_simp)
 (*Este metodo permite mover una variable a la izquierda y simplificar los exponentes*)
 
-(*7*) method simp_power for x::"'a::{ab_semigroup_mult,power}"  = (move_right x, mon_simp)
+(*7*) method simp_power for x::"'a::{ab_semigroup_mult,power}"  = (move_right x, (mon_simp)?)
 (*Este metodo permite mover una variable a la derecha y simplificar los exponentes*)
 
 
@@ -818,8 +818,11 @@ lemma "(((((x:: real) * y) * z) * x^2) * y) * z^2 = x^3 * y^2 * z^3"
 
 
 lemma "a * b * z * w = b * z * w * a" for a::real
-  apply (move_right a)
+  apply (simp_power a)
   done
+
+lemma "z^2 * x * z = x * z^3" for x:: real
+  oops
 
 
 
