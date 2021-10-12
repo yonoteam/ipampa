@@ -48,7 +48,7 @@ declare semiring_normalization_rules(29) [mono_rules]
 
 (*4*) method move_right for x::"'a::{ab_semigroup_mult,power}" = 
 (((subst mult.commute[where a="x^_"])+)?; 
-    ((subst mult.commute[where a="x"])+)?; ((subst mult.assoc)+)?, (rule refl)?)+
+    ((subst mult.commute[where a="x"])+)?; ((subst mult.assoc)+)?, (rule refl)?)
 (*Este metodo permite mover una variable a la derecha*)
 
 (*5*) method frac_ad = (simp add: add_frac_eq  diff_frac_eq)
@@ -60,6 +60,10 @@ declare semiring_normalization_rules(29) [mono_rules]
 (*7*) method simp_power for x::"'a::{ab_semigroup_mult,power}"  = (move_right x, (mon_simp)?)
 (*Este metodo permite mover una variable a la derecha y simplificar los exponentes*)
 
+method move_left_term for x::"'a::{ab_semigroup_add,power}" =
+ (((subst add.commute[where b="x"])+)?; 
+    ((subst add.commute[where b="_* x"])+)?; ((subst add.commute[where b="x *_"])+)?;
+ (subst add.assoc)+)+, (rule refl)?
 
 
 subsection \<open> Basic \<close>
@@ -822,7 +826,15 @@ lemma "a * b * z * w = b * z * w * a" for a::real
   done
 
 lemma "z^2 * x * z = x * z^3" for x:: real
-  oops
+  by (simp_power z)
+
+lemma "2* a + b + c=  2* a + b + c " for b:: real
+  apply (move_left_term a)
+  done
+
+lemma " c + d + a * b + e = a * b + c + d + e" for a:: real
+  apply (move_left_term b)
+
 
 
 
