@@ -65,6 +65,11 @@ method move_left_term for x::"'a::{ab_semigroup_add,power}" =
     ((subst add.commute[where b="_* x"])+)?; ((subst add.commute[where b="x *_"])+)?;
  (subst add.assoc)+)+, (rule refl)?
 
+method move_right_term for x::"'a::{ab_semigroup_add,power}" =
+ (((subst add.commute[where a="x"])+)?; 
+    ((subst add.commute[where a="_* x"])+)?; ((subst add.commute[where a="x *_"])+)?;
+ (subst add.assoc)+)+, (rule refl)?
+
 
 subsection \<open> Basic \<close>
 
@@ -828,13 +833,16 @@ lemma "a * b * z * w = b * z * w * a" for a::real
 lemma "z^2 * x * z = x * z^3" for x:: real
   by (simp_power z)
 
-lemma "2* a + b + c=  2* a + b + c " for b:: real
+lemma "2* a + b + c= b + 2* a + c " for b:: real
   apply (move_left_term a)
   done
 
 lemma " c + d + a * b + e = a * b + c + d + e" for a:: real
   apply (move_left_term b)
+  done
 
+lemma " 2 * a + b + c  = b + c + 2 * a " for b:: real
+  apply (move_right_term a)
 
 
 
