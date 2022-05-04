@@ -20,45 +20,174 @@ theory Real_Arith_Problems
 begin
 
 
+method move_left for x::"'a::{ab_semigroup_mult,power}" = (
+    (simp only: mult.assoc[symmetric])?, (* prepare for main loop *)
+    (
+      (simp only: mult.commute[where b="x^_"] mult.commute[where b="x"])?,
+      (simp only: mult.assoc)
+      )+
+    ), (simp only: mult.assoc[symmetric])? (* clean after main loop *)
 
-named_theorems monomial_rules "lista de propiedes para simplificar monomios"
+method move_right for x::"'a::{ab_semigroup_mult,power}" = (
+    (simp only: mult.assoc)?,
+    (
+      (simp only: mult.commute[where a="x^_"] mult.commute[where a="x"])?,
+      (simp only: mult.assoc[symmetric])+
+      )+
+    ), (simp only: mult.assoc[symmetric])?
 
-declare  semiring_normalization_rules(29) [monomial_rules]
-    and semiring_normalization_rules(28) [monomial_rules]
-    and semiring_normalization_rules(27) [monomial_rules]
-    and semiring_normalization_rules(18) [monomial_rules]
+lemma sign_distrib_laws: 
+  shows "- (a + b) = - a - (b::'a::ab_group_add)"
+  and "- (a - b) = - a + b"
+  and "- (- a + b) = a - b"
+  and "- (- a - b) = a + b"
+  and "a - (b + c) = a - b - c"
+  and "a - (b - c) = a - b + c"
+  and "a - (- b + c) = a + b - c"
+  and "a - (- b - c) = a + b + c"
+  by simp_all
 
-named_theorems mono_rules "otra lista para simplificar monomios"
+method distribute = (
+    ((subst sign_distrib_laws)+)?,
+    ((subst (asm) sign_distrib_laws)+)?,
+    ((subst minus_mult_left)+)?, (* - (a * b) = - a * b *)
+    ((subst (asm) minus_mult_left)+)?,
+    ((subst ring_distribs)+)?,
+    ((subst (asm) ring_distribs)+)?,
+    simp
+    )
 
-declare semiring_normalization_rules(29) [mono_rules]
-    and semiring_normalization_rules(28) [mono_rules]
+named_theorems mon_pow_simps "simplification rules for powers in monomials "
 
-(* He aqui una lista de tacticas utiles para futuras demostraciones *)
+declare semiring_normalization_rules(27) [mon_pow_simps] (* x * x ^ q = x ^ Suc q *)
+    and semiring_normalization_rules(28) [mon_pow_simps] (* x ^ q * x = x ^ Suc q *)
+    and semiring_normalization_rules(29) [mon_pow_simps] (* x * x = ?x\<^sup>2 *)
 
-(*1*) method bin_unfold = (simp add: power2_diff power2_sum power_mult_distrib)
-(*Este metodo permite expandir un binomio al cuadrado*)
+method mon_pow_simp = (
+    (simp add: mon_pow_simps del: power_Suc)?,
+    (simp only: mult.assoc)?,
+    (simp add: mon_pow_simps del: power_Suc)?
+    ) \<comment> \<open> simplifies powers in monomials \<close>
 
-(*2*) method move_left for x::"'a::{ab_semigroup_mult,power}" =
- (((subst mult.commute[where b="x^_"])+)?; 
-    ((subst mult.commute[where b="x"])+)?; (subst mult.assoc)+)+, (rule refl)?
- (*Este metodo permite mover una variable a la izquierda*)
+lemma "x * x * x * (y ^ Suc n * x * z * (y * x * z) * z * z) * z * z 
+  = x ^ 5 * y ^ Suc (Suc n) * z ^ 6" for x::real
+  apply (move_left z)
+  apply (move_left y)
+  apply (move_left x)
+  apply mon_pow_simp
+  done
 
-(*3*) method mon_simp  = (simp add: monomial_rules) 
-(*Este metodo permite simplificar monomios de forma exhaustiva*)
+lemma "x * x * x * (y\<^sup>2 * x * z * (y * x * z) * z * z) * z * z 
+  = x ^ 5 * y ^ 3 * z ^ 6" for x::real
+  apply (move_right x)
+  apply (move_right y)
+  apply (move_right z)
+  apply mon_pow_simp
+  done
 
-(*4*) method move_right for x::"'a::{ab_semigroup_mult,power}" = 
-(((subst mult.commute[where a="x^_"])+)?; 
-    ((subst mult.commute[where a="x"])+)?; ((subst mult.assoc)+)?, (rule refl)?)
-(*Este metodo permite mover una variable a la derecha*)
+lemma "(36::real) * (x1\<^sup>2 * (x1 * x2 ^ 3)) - (- (24 * (x1\<^sup>2 * x2) * x1 ^ 3 * x2\<^sup>2) 
+  - 12 * (x1\<^sup>2 * x2) * x1 * x2 ^ 4) - 36 * (x1\<^sup>2 * (x2 * x1)) * x2\<^sup>2 - 12 * (x1\<^sup>2 * (x1 * x2 ^ 5)) 
+  = 24 * (x1 ^ 5 * x2 ^ 3)" (is "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t6")
+  apply distribute
+  apply (move_right x1)
+  apply (move_right x2)
+  apply mon_pow_simp
+  done
 
-(*5*) method frac_ad = (simp add: add_frac_eq  diff_frac_eq)
-(*Este metodo permite distribuir el denominador de una fraccion respecto a la suma o resta*)
+method mon_simp_vars for x y::"'a::{ab_semigroup_mult,power}" = (
+    (move_right x)?, (move_right y)?, mon_pow_simp?
+    (* second argument should not be the right-most argument in a monomial *)
+    )
 
-(*6*) method power_simp for x::"'a::{ab_semigroup_mult,power}"  = (move_left x, mon_simp)
-(*Este metodo permite mover una variable a la izquierda y simplificar los exponentes*)
+lemma "x * x * (x:: real) * (y^2 * x * z * (y * x * z) * z * z) * z * z 
+  = x^5 * y^3 * z^6"
+  by (mon_simp_vars x y)
 
-(*7*) method simp_power for x::"'a::{ab_semigroup_mult,power}"  = (move_right x, (mon_simp)?)
-(*Este metodo permite mover una variable a la derecha y simplificar los exponentes*)
+lemma "y  * x * x * (x:: real) * (w * y^2 * x * z * (y * x * z) * z * w^4 * z) * z * z 
+  = x^5 * y^4 * z^6 * w^5"
+  by (mon_simp_vars x y) (mon_simp_vars z w) 
+
+lemma "x * x * (x:: real) * (y^(Suc n) * x * z * (y * x * z) * z * z) * z * z 
+  = x^5 * y^(Suc (Suc n)) * z^6"
+  by (mon_simp_vars x y)
+
+method bin_unfold = (simp add: power2_diff power2_sum power_mult_distrib)
+
+lemma "0 \<le> A \<Longrightarrow> 0 < b \<Longrightarrow> x2\<^sup>2 \<le> 2 * b * (m - x1) \<Longrightarrow> 0 \<le> (t::real) 
+  \<Longrightarrow> \<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> b * \<tau> \<le> x2 \<and> \<tau> \<le> \<epsilon> 
+  \<Longrightarrow> (x2 - b * t)\<^sup>2 \<le> 2 * b * (m - (x2 * t - b * t\<^sup>2 / 2 + x1))"
+  apply bin_unfold
+  apply distribute
+  apply (mon_simp_vars b t)
+  done
+
+lemma factorR: 
+  fixes a::real
+  shows "a * b + a * c = (b + c) * a"
+    and "b * a + a * c = (b + c) * a"
+    and "a * b + c * a = (b + c) * a"
+    and "b * a + c * a = (b + c) * a"
+  by distribute+
+
+lemma factorL: 
+  fixes a::real
+  shows "a * b + a * c = a * (b + c)"
+    and "b * a + a * c = a * (b + c)"
+    and "a * b + c * a = a * (b + c)"
+    and "b * a + c * a = a * (b + c)"
+  by distribute+
+
+lemma factor_fracR: 
+  fixes a::real
+  assumes "c > 0"
+  shows "a / c + b = (a + c * b) * (1 / c)"
+    and "a + b / c = (c * a + b) * (1 / c)"
+    and "a / c - b = (a - c * b) * (1 / c)"
+    and "a - b / c = (c * a - b) * (1 / c)"
+    and "- a / c + b = (- a + c * b) * (1 / c)"
+    and "- a + b / c = (- c * a + b) * (1 / c)"
+    and "- a / c - b = (a + c * b) * (- (1 / c))"
+    and "- a - b / c = (c * a + b) * (- (1 / c))"
+  using assms by distribute+
+
+lemma "a * (b / c) = (a * b) / c" for a::real
+  oops
+
+lemma STTexample6_arith:
+  assumes "0 < A" "0 < B" "0 < \<epsilon>" "0 \<le> x2" "0 \<le> (t::real)" "- B \<le> k" "k \<le> A"
+    and key: "x1 + x2\<^sup>2 / (2 * B) + (A * (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2) / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)) \<le> S" (is "?k3 \<le> S")
+    and ghyp: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> 0 \<le> k * \<tau> + x2 \<and> \<tau> \<le> \<epsilon>"
+  shows "k * t\<^sup>2 / 2 + x2 * t + x1 + (k * t + x2)\<^sup>2 / (2 * B) \<le> S" (is "?k0 \<le> S")
+  using assms
+  apply -
+  apply distribute
+  apply (subst factor_fracR[where c="2 * B"], simp?)
+  apply (subst (asm) factor_fracR[where c="2 * B"], simp?)
+  apply (mon_simp_vars A B)
+  apply (subst (asm) factor_fracR[where c="2"], simp?)
+  apply mon_pow_simp
+  apply (subst (asm) factor_fracR[where c="2"], simp?)
+  apply mon_pow_simp
+  apply (subst (asm) factor_fracR[where c="2 * B"], simp?)
+  apply mon_pow_simp
+  apply (subst (asm) factor_fracR[where c="2 * B"], simp?)
+  apply mon_pow_simp
+  apply (subst (asm) factor_fracR[where c="2"], simp?)
+  apply mon_pow_simp
+  apply (move_right A)
+  apply mon_pow_simp
+  apply distribute
+  apply bin_unfold
+  apply mon_pow_simp
+
+  apply (subst factorL[where a=4])
+
+  apply (mon_simp_vars )
+  oops
+
+(* still unsure if the methods below will be needed *)
+
+method frac_ad = (simp add: add_frac_eq  diff_frac_eq)
 
 method move_left_term for x::"'a::{ab_semigroup_add,power}" =
  (((subst add.commute[where b="x"])+)?; 
@@ -70,6 +199,11 @@ method move_right_term for x::"'a::{ab_semigroup_add,power}" =
     ((subst add.commute[where a="_* x"])+)?; ((subst add.commute[where a="x *_"])+)?;
  (subst add.assoc)+)+, (rule refl)?
 
+thm semiring_normalization_rules(17,27,28,29)
+
+lemma "x * y + z + z * 2 * y * x\<^sup>2 + z + y\<^sup>2 = y\<^sup>2 + x\<^sup>2 * 2 * z * y + 2 * z + x * y" for x:: real
+  apply simp
+  done
 
 subsection \<open> Basic \<close>
 
@@ -87,78 +221,48 @@ lemma is_interval_real_nonneg[simp]: "is_interval {x:: real. x\<ge>0}"
   using is_interval_1 by force 
 
 lemma "((a::real)-b)^2 = a^2 - 2 * a * b + b^2"
-  (*apply (subst power2_diff[of a b])*)
-by bin_unfold
+  by bin_unfold
+
+lemma "(cos t)\<^sup>2 + (sin (t::real))\<^sup>2 = 1"
+  by simp
 
 lemma norm_rotate_eq:
   fixes x :: "'a:: {banach,real_normed_field}"
   shows "(x * cos t - y * sin t)\<^sup>2 + (x * sin t + y * cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2" (is "?a^2+?b^2 =_")
     and "(x * cos t + y * sin t)\<^sup>2 + (y * cos t - x * sin t)\<^sup>2 = x\<^sup>2 + y\<^sup>2" (is "?e^2+?f^2 =_")
 proof-
-  have exp1: "?a^2 = x^2 * (cos t)^2 -2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?c")
+  have exp1: "?a^2 = x\<^sup>2 * (cos t)\<^sup>2 - 2 * x * y * cos t * sin t + y\<^sup>2 * (sin t)\<^sup>2" (is "_ = ?c")
     by bin_unfold
-  have exp2: "?b^2 = x^2 * (sin t)^2 +2 * x * y * sin t * cos t + y^2 * (cos t)^2" (is "_=?d")
-    by (simp add: power2_sum power_mult_distrib)
-  have id1:  "(cos t)^2 + (sin t)^2 = 1"
-    by simp
+  have exp2: "?b^2 = x\<^sup>2 * (sin t)\<^sup>2 + 2 * x * y * sin t * cos t + y\<^sup>2 * (cos t)\<^sup>2" (is "_=?d")
+    by bin_unfold
   have "?a\<^sup>2 + ?b\<^sup>2 = ?c+?d "
     using exp1 exp2
     by fastforce
-  also have "... = x^2 * (cos t)^2 + y^2 * (sin t)^2 +x^2 * (sin t)^2  + y^2 * (cos t)^2"
-    by auto
+  also have "... = x\<^sup>2 * ((cos t)\<^sup>2 + (sin t)\<^sup>2) + y\<^sup>2 * ((cos t)\<^sup>2 + (sin t)\<^sup>2)"
+    by distribute
   also have "... = x^2 + y^2"
-    by (smt (z3) \<open>(cos t)\<^sup>2 + (sin t)\<^sup>2 = 1\<close> add_diff_cancel_left'
-        cancel_ab_semigroup_add_class.diff_right_commute diff_add_cancel
-        mult.commute mult_numeral_1 numeral_One vector_space_over_itself.scale_left_diff_distrib)
-  finally show  "?a\<^sup>2+?b\<^sup>2 = x\<^sup>2 + y\<^sup>2" 
     by simp
+  finally show  "?a\<^sup>2+?b\<^sup>2 = x\<^sup>2 + y\<^sup>2" .
 next
-  have exp3: "?e^2 = x^2 * (cos t)^2 +2 * x * y * cos t * sin t + y^2 * (sin t)^2 " (is "_ = ?g")
-    by (simp add: power2_sum power_mult_distrib)
-  have exp4: "?f^2 =  y^2 * (cos t)^2 -2 * x * y * sin t * cos t + x^2 * (sin t)^2  "(is "_= ?h")
-     by bin_unfold
-have id1:  "(cos t)^2 + (sin t)^2 = 1"
-    by simp
-  have "?e\<^sup>2 + ?f\<^sup>2 = ?g+?h "
+  have exp3: "?e^2 = x\<^sup>2 * (cos t)\<^sup>2 + 2 * x * y * cos t * sin t + y\<^sup>2 * (sin t)\<^sup>2" (is "_ = ?g")
+    by bin_unfold
+  have exp4: "?f^2 = y\<^sup>2 * (cos t)\<^sup>2 - 2 * x * y * sin t * cos t + x\<^sup>2 * (sin t)\<^sup>2"(is "_= ?h")
+    by bin_unfold
+  have "?e\<^sup>2 + ?f\<^sup>2 = ?g + ?h "
     using exp3 exp4
     by presburger
-  also have "... = x^2 * (cos t)^2 + x^2 * (sin t)^2  + y^2 * (sin t)^2 + y^2 * (cos t)^2  "
-    by fastforce
-  also have "... = x^2 + y^2 "
-    by (smt (z3) add_diff_cancel_left' diff_add_cancel id1 is_num_normalize(1)
- mult.commute mult_numeral_1 numeral_One vector_space_over_itself.scale_left_diff_distrib)
-  finally show  "?e\<^sup>2 + ?f\<^sup>2 = x\<^sup>2 + y\<^sup>2"
-    by (simp add: \<open>x\<^sup>2 * (cos t)\<^sup>2 + 2 * x * y * cos t * sin t + y\<^sup>2 * (sin t)\<^sup>2 
-+ (y\<^sup>2 * (cos t)\<^sup>2 - 2 * x * y * sin t * cos t + x\<^sup>2 * (sin t)\<^sup>2) = x\<^sup>2 * (cos t)\<^sup>2
- + x\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (cos t)\<^sup>2\<close> \<open>x\<^sup>2 * (cos t)\<^sup>2 + x\<^sup>2 * (sin t)\<^sup>2
- + y\<^sup>2 * (sin t)\<^sup>2 + y\<^sup>2 * (cos t)\<^sup>2 = x\<^sup>2 + y\<^sup>2\<close>) 
+  also have "... = x\<^sup>2 * ((cos t)\<^sup>2 + (sin t)\<^sup>2) + y\<^sup>2 * ((cos t)\<^sup>2 + (sin t)\<^sup>2)"
+    by distribute
+  also have "... = x\<^sup>2 + y\<^sup>2"
+    by simp
+  finally show  "?e\<^sup>2 + ?f\<^sup>2 = x\<^sup>2 + y\<^sup>2" .
 qed
 
 lemma mult_abs_right_mono: "a < b \<Longrightarrow> a * \<bar>c\<bar> \<le> b * \<bar>c\<bar>" for c::real
   by (simp add: mult_right_mono)
 
-lemma dyn_cons_qty_arith: "(36::real) * (x1\<^sup>2 * (x1 * x2 ^ 3)) - 
-  (- (24 * (x1\<^sup>2 * x2) * x1 ^ 3 * (x2)\<^sup>2) - 12 * (x1\<^sup>2 * x2) * x1 * x2 ^ 4) - 
-  36 * (x1\<^sup>2 * (x2 * x1)) * (x2)\<^sup>2 - 12 * (x1\<^sup>2 * (x1 * x2 ^ 5)) = 24 * (x1 ^ 5 * x2 ^ 3)" 
-  (is "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t6")
-proof- 
-  have "?t1= ?t4"
-    by (simp add: power2_eq_square power3_eq_cube)
-  have "?t2 = ?t6"
-    by (metis (no_types, hide_lams)
- mult.assoc mult.left_commute power2_eq_square power3_eq_cube power_add_numeral2
- semiring_norm(2) semiring_norm(7))
-  have h1: "?t3 = ?t5"
-    by (simp add: semiring_normalization_rules(27))
-  have "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t2 + ?t3 - ?t5"
-    by (simp add: \<open>36 * (x1\<^sup>2 * (x1 * x2 ^ 3)) = 36 * (x1\<^sup>2 * (x2 * x1)) * x2\<^sup>2\<close>)
-  also have "... = ?t2 "
-    using h1 by simp
-  also have "... = ?t6 "
-    by (simp add: \<open>24 * (x1\<^sup>2 * x2) * x1 ^ 3 * x2\<^sup>2 = 24 * (x1 ^ 5 * x2 ^ 3)\<close>)
-  finally show "?t1 - (- ?t2 - ?t3) - ?t4 - ?t5 = ?t6" 
-    by simp
-qed
+
+
 
 lemma local_lipschitz_first_order_linear:
   fixes c::"real \<Rightarrow> real"
@@ -208,6 +312,7 @@ lemma frac: "(1:: real)/ a * 1 / b = 1 / (a * b) "
   by simp
 
 lemma "((x::real)-y)^2  / (2 * B)   = x^2 / (2 * B)  -2 * x * y /(2 * B)  + y^2  / (2 * B)"
+  apply bin_unfold
   by (simp add: power2_diff diff_divide_distrib add_divide_distrib)
 
 lemma STTexample3a_arith:
@@ -267,14 +372,8 @@ mult_le_cancel_left_pos mult_le_cancel_right not_one_le_zero)
   also have "... = x1 + x2\<^sup>2 / (2 * B) + A^2 * \<epsilon>\<^sup>2 / (2 * B) +A *  \<epsilon> * x2 / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)" (is "_=?k2")
     by (clarsimp simp: frac add_divide_distrib)
   oops
- 
 
-lemma STTexample6_arith:
-  assumes "0 < A" "0 < B" "0 < \<epsilon>" "0 \<le> x2" "0 \<le> (t::real)" "- B \<le> k" "k \<le> A"
-    and key: "x1 + x2\<^sup>2 / (2 * B) + (A * (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2) / B + (A * \<epsilon>\<^sup>2 / 2 + \<epsilon> * x2)) \<le> S" (is "?k3 \<le> S")
-    and ghyp: "\<forall>\<tau>. 0 \<le> \<tau> \<and> \<tau> \<le> t \<longrightarrow> 0 \<le> k * \<tau> + x2 \<and> \<tau> \<le> \<epsilon>"
-  shows "k * t\<^sup>2 / 2 + x2 * t + x1 + (k * t + x2)\<^sup>2 / (2 * B) \<le> S" (is "?k0 \<le> S")
-  oops
+
 
 
   subsubsection \<open> STTT Tutorial: Example 7 \<close>
@@ -713,40 +812,52 @@ qed
 Intentare encontrar una tactica para simplificar cualquier monomio
 *)
 lemma "(a:: real) * (b* c) = (a * b) *c"
-  apply (rule semiring_normalization_rules(18)).
+  by mon_pow_simp
 
 lemma "(a:: real)* a^n = a^(Suc n)"
-  by (rule semiring_normalization_rules(27))
+  oops
 
 lemma "(a:: real) * b = b * a"
-  apply (rule cross3_simps(11))
-  done
+  by mon_pow_simp
 
 lemma "(x:: real) * y * z = x * z * y"
-  by mon_simp
+  by mon_pow_simp
 
 lemma "(a:: real) * a * b = a^2 * b"
-  by mon_simp
+  by mon_pow_simp
 
 lemma "(x:: real)^3 * y * x^2 * x = y * x^6"
-  by mon_simp
+  by mon_pow_simp
 
 lemma "(a:: real) * a^5 = a^6"
-  by mon_simp
+  by mon_pow_simp
 
 lemma "(x:: real)^2 * z^2 * y * z * x = x^3 * y * z^3"
-  apply mon_simp
-  done
-(*
-  apply (simp add: mult.assoc[symmetric])
-  apply mon_simp
-  apply (simp add: cross3_simps(11) [of  "x^2" "z^2"])
-  apply mon_simp
-  oops
-  apply mon_simp
-  apply (simp add: mult.assoc[symmetric])
-  apply mon_simp
-*)
+  by (mon_simp_vars x y)
+
+lemma "a * b = b * a" for a :: real
+  by mon_pow_simp
+
+lemma "a * b * c = c * a * b" for a::real
+  by mon_pow_simp
+
+lemma "(x:: real) * y * x * y * x = x^3 * y^2"
+  by (mon_simp_vars x y)
+
+lemma "(x:: real) * y^2 * x^2 * y * x = x^4 * y^3"
+  by (mon_simp_vars x y)
+
+lemma "(x:: real) * y * x * y^2 * x^3 * x = x^6 * y^3"
+  by (mon_simp_vars x y)
+
+lemma "(((((x:: real) * y) * z) * x^2) * y) * z^2 = x^3 * y^2 * z^3"
+  by (mon_simp_vars x y)
+
+lemma "a * b * z * w = b * z * w * a" for a::real
+  by (mon_simp_vars a b)
+
+lemma "z^2 * x * z = x * z^3" for x:: real
+  by (mon_simp_vars x z)
 
 (*
 Aqui desarrollare una tactica para encontrar el comun denominador entre dos fracciones
@@ -777,72 +888,8 @@ lemma assumes "(k:: real) > 0" and "1 / (k * (k + 1)) \<le> S"
 
 thm algebra_simps(5)
             
-lemma "a * b = b * a" for a :: real
-  apply mon_simp
-  done
-(*
-  apply (subst cross3_simps(11)[where b=b])
-  apply (rule refl)
-  done
-*)
-
-lemma "a * b * c = c * a * b" for a::real
-  apply mon_simp
-  done
-(*
-  apply (subst cross3_simps(11)[where b=c])+
-  apply (subst mult.assoc)+
-  apply (rule refl)
-  done
-*)
-
-(* Buscare una tactica para reagrupar variables  *)
-
-lemma "(x:: real) * y * x * y * x = x^3 * y^2"
-  by (power_simp y)
-(*
-  apply (subst cross3_simps(11)[where b=x])+
-  apply mon_simp
-  done
-
- apply (subst mult.assoc)+ 
-  apply mon_simp
-  done
-*)
-
-lemma "(x:: real) * y^2 * x^2 * y * x = x^4 * y^3"
-  by (power_simp y)
-(*
-  apply (subst cross3_simps(11)[where b="x^_"])+
- apply (subst cross3_simps(11)[where b="x"])+
-  apply mon_simp
-  done
- *)
-
-lemma "(x:: real) * y * x * y^2 * x^3 * x = x^6 * y^3"
-  by (power_simp y)
-
-lemma "(((((x:: real) * y) * z) * x^2) * y) * z^2 = x^3 * y^2 * z^3"
-  by (power_simp x, power_simp y)
 
 
-lemma "a * b * z * w = b * z * w * a" for a::real
-  apply (simp_power a)
-  done
-
-lemma "z^2 * x * z = x * z^3" for x:: real
-  by (simp_power z)
-
-lemma "2* a + b + c= b + 2* a + c " for b:: real
-  apply (move_left_term a)
-  done
-
-lemma " c + d + a * b + e = a * b + c + d + e" for a:: real
-  apply (move_left_term b)
-  done
-
-lemma " 2 * a + b + c  = b + c + 2 * a " for b:: real
-  apply (move_right_term a)
 
 
 

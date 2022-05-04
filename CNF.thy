@@ -98,7 +98,7 @@ fun push_neg :: "'a formula \<Rightarrow> 'a formula"
   | "push_neg (\<phi> \<or>\<^sub>F \<psi>) = (push_neg \<phi>) \<or>\<^sub>F (push_neg \<psi>)"
   | "push_neg (\<phi> \<and>\<^sub>F \<psi>) = (push_neg \<phi>) \<and>\<^sub>F (push_neg \<psi>)"
 
-lemma sat_push_neg_iff: "sat v (push_neg \<phi>) \<longleftrightarrow> sat v \<phi>"
+lemma sat_push_neg_iff: "v \<Turnstile> push_neg \<phi> \<longleftrightarrow> v \<Turnstile> \<phi>"
   by (induct \<phi> rule: push_neg.induct, simp_all)
 
 lemma NNF_push_neg: 
@@ -137,6 +137,15 @@ lemma is_CNF_distrib_law:
   by (induct \<phi>; induct \<psi>; clarsimp simp add: is_literal_iff dest!: is_CNF_NegD)
     (metis distrib_law.simps distrib_law_CNF_clause(2))
 
+lemma sat_distrib_law1: 
+  "is_clause \<phi> \<Longrightarrow> is_clause \<psi> \<Longrightarrow> v \<Turnstile> distrib_law \<phi> \<psi> \<longleftrightarrow> v \<Turnstile> \<phi> \<or>\<^sub>F \<psi>"
+  by (induct \<phi>; induct \<psi>; clarsimp)
+
+lemma sat_distrib_law2: 
+  "is_clause \<phi> \<Longrightarrow> is_CNF \<psi> \<Longrightarrow> \<psi> = \<psi>\<^sub>1 \<and>\<^sub>F \<psi>\<^sub>2 \<Longrightarrow> v \<Turnstile> distrib_law \<phi> \<psi> \<longleftrightarrow> v \<Turnstile> (\<phi> \<or>\<^sub>F \<psi>\<^sub>1) \<and>\<^sub>F (\<phi> \<or>\<^sub>F \<psi>\<^sub>2)"
+  apply (induct \<phi>; induct \<psi> arbitrary: \<psi>\<^sub>1 \<psi>\<^sub>2; clarsimp simp: is_literal_iff)
+  oops
+
 fun to_CNF :: "'a formula \<Rightarrow> 'a formula"
   where "to_CNF (\<phi> \<and>\<^sub>F \<psi>) = to_CNF \<phi> \<and>\<^sub>F to_CNF \<psi>"
   | "to_CNF (\<phi> \<or>\<^sub>F \<psi>) = distrib_law (to_CNF \<phi>) (to_CNF \<psi>)"
@@ -146,6 +155,12 @@ lemma "is_CNF (to_CNF (push_neg \<phi>))"
   by (induct \<phi> rule: push_neg.induct)
     (simp_all add: is_CNF_distrib_law 
       del: distrib_law.simps)
+
+value "is_CNF (\<not>\<^sub>F ((@\<^sub>Fp \<and>\<^sub>F @\<^sub>Fq) \<and>\<^sub>F \<not>\<^sub>F @\<^sub>Fr))"
+
+value "to_CNF (push_neg (\<not>\<^sub>F ((@\<^sub>Fp \<and>\<^sub>F @\<^sub>Fq) \<and>\<^sub>F \<not>\<^sub>F @\<^sub>Fr)))"
+
+
 
 (*>*)
 end
